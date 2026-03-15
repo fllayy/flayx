@@ -6,6 +6,7 @@ client.riffy.on("queueEnd", async (player) => {
     if (player.message) await player.message.delete();
 
     if (player.isAutoplay) {
+        player._autoplayTriggered = true;
         player.autoplay(player)
     } else {
         player.destroy();
