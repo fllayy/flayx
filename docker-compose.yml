@@ -1,0 +1,61 @@
+services:
+  # Service de déchiffrement des signatures YouTube
+  yt-cipher:
+    image: ghcr.io/kikkia/yt-cipher:master
+    container_name: ejs_signature_api
+    restart: unless-stopped
+    ports:
+      - "8001:8001"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    networks:
+      - lavalink_net
+
+  # Serveur Lavalink
+  lavalink:
+    image: fredboat/lavalink:latest
+    container_name: lavalink_server
+    restart: unless-stopped
+    ports:
+      - "2333:2333"
+    volumes:
+      - ./application.yml:/opt/Lavalink/application.yml
+    environment:
+      - _JAVA_OPTIONS=-Xmx1G
+    depends_on:
+      - yt-cipher
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    networks:
+      - lavalink_net
+
+  # Bot Discord
+  bot:
+    image: ghcr.io/${GITHUB_REPOSITORY}:latest
+    container_name: flayx_bot
+    restart: unless-stopped
+    depends_on:
+      - lavalink
+    environment:
+      - CLIENT_TOKEN=${CLIENT_TOKEN}
+      - CLIENT_ID=${CLIENT_ID}
+      - MONGODB_URL=${MONGODB_URL}
+      - DEVELOPERS=${DEVELOPERS}
+      - SHARDING=${SHARDING:-false}
+      - DATABASE=${DATABASE:-false}
+      - LAVALINK_HOST=lavalink
+      - LAVALINK_PORT=2333
+      - LAVALINK_PASSWORD=${LAVALINK_PASSWORD:-youshallnotpass}
+      - LAVALINK_SECURE=false
+    networks:
+      - lavalink_net
+
+networks:
+  lavalink_net:
+    driver: bridge
