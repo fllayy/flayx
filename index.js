@@ -23,9 +23,6 @@ if (config.sharding) {
     require("./structures/client")
 }
 
-if (config.database) {
-    require("./structures/database/connect").connect()
-}
 
 /**
  * Enable sharding only if your bot is large, or wait until Discord officially notifies you to shard your bot.

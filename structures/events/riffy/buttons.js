@@ -1,139 +1,56 @@
 const client = require("../../client");
 const { ActionRowBuilder, ButtonBuilder, ButtonStyle } = require("discord.js");
+const { buildEmbed, buildRow } = require("../../riffy/tracks/trackStart");
+
+function buildDisabledRow(label, style) {
+    return new ActionRowBuilder().addComponents(
+        new ButtonBuilder().setCustomId('skip').setLabel('Skip').setEmoji('➡️').setStyle(ButtonStyle.Secondary).setDisabled(true),
+        new ButtonBuilder().setCustomId('pause_resume').setLabel('Pause/Resume').setEmoji('⏸').setStyle(ButtonStyle.Secondary).setDisabled(true),
+        new ButtonBuilder().setCustomId('stop').setLabel('Stop').setEmoji('🔴').setStyle(ButtonStyle.Danger).setDisabled(true),
+        new ButtonBuilder().setCustomId('autoplay').setLabel(label).setStyle(style).setDisabled(true)
+    );
+}
 
 client.on('interactionCreate', async (interaction) => {
     if (!interaction.isButton()) return;
 
     const player = client.riffy.players.get(interaction.guild.id);
 
-    if (interaction.customId === 'pause') {
+    if (interaction.customId === 'pause_resume') {
         await interaction.deferUpdate();
-
         if (!player) return interaction.followUp({ content: `The player doesn't exist`, ephemeral: true });
 
-        player.pause(true);
-
-        const row = new ActionRowBuilder()
-            .addComponents(
-                new ButtonBuilder()
-                    .setCustomId('disconnect')
-                    .setStyle(ButtonStyle.Secondary)
-                    .setEmoji('⏺'),
-
-                new ButtonBuilder()
-                    .setCustomId('play')
-                    .setStyle(ButtonStyle.Secondary)
-                    .setEmoji('▶'),
-
-                new ButtonBuilder()
-                    .setCustomId('skip')
-                    .setStyle(ButtonStyle.Secondary)
-                    .setEmoji('⏭')
-            );
-
-        return await interaction.message.edit({
-            components: [row]
-        })
-    } else if (interaction.customId === 'play') {
-        await interaction.deferUpdate();
-
-        if (!player) return interaction.followUp({ content: `The player doesn't exist`, ephemeral: true });
-
-        player.pause(false);
-
-        const row = new ActionRowBuilder()
-            .addComponents(
-                new ButtonBuilder()
-                    .setCustomId('disconnect')
-                    .setStyle(ButtonStyle.Secondary)
-                    .setEmoji('⏺'),
-
-                new ButtonBuilder()
-                    .setCustomId('pause')
-                    .setStyle(ButtonStyle.Secondary)
-                    .setEmoji('⏸'),
-
-                new ButtonBuilder()
-                    .setCustomId('skip')
-                    .setStyle(ButtonStyle.Secondary)
-                    .setEmoji('⏭')
-            )
-
-        return await interaction.message.edit({
-            components: [row]
-        })
+        player.pause(!player.paused);
 
     } else if (interaction.customId === 'skip') {
         await interaction.deferUpdate();
-
         if (!player) return interaction.followUp({ content: `The player doesn't exist`, ephemeral: true });
+
         player.stop();
 
-        const rowDisabled = new ActionRowBuilder()
-            .addComponents(
-                new ButtonBuilder()
-                    .setCustomId('disconnect')
-                    .setStyle(ButtonStyle.Secondary)
-                    .setEmoji('⏺')
-                    .setDisabled(true),
+        return interaction.message.edit({
+            components: [buildDisabledRow('Skipped', ButtonStyle.Success)]
+        });
 
-                new ButtonBuilder()
-                    .setCustomId('pause')
-                    .setStyle(ButtonStyle.Secondary)
-                    .setEmoji('⏸')
-                    .setDisabled(true),
-
-                new ButtonBuilder()
-                    .setCustomId('skip')
-                    .setStyle(ButtonStyle.Secondary)
-                    .setEmoji('⏭')
-                    .setDisabled(true),
-
-                new ButtonBuilder()
-                    .setCustomId('skiped')
-                    .setStyle(ButtonStyle.Success)
-                    .setLabel('Skiped')
-                    .setDisabled(true)
-            );
-
-        return await interaction.message.edit({
-            components: [rowDisabled]
-        })
-    } else if (interaction.customId === 'disconnect') {
+    } else if (interaction.customId === 'stop') {
         await interaction.deferUpdate();
-
         if (!player) return interaction.followUp({ content: `The player doesn't exist`, ephemeral: true });
+
         player.destroy();
 
-        const row = new ActionRowBuilder()
-            .addComponents(
-                new ButtonBuilder()
-                    .setCustomId('disconnect')
-                    .setStyle(ButtonStyle.Secondary)
-                    .setEmoji('⏺')
-                    .setDisabled(true),
+        return interaction.message.edit({
+            components: [buildDisabledRow('Stopped', ButtonStyle.Danger)]
+        });
 
-                new ButtonBuilder()
-                    .setCustomId('play')
-                    .setStyle(ButtonStyle.Secondary)
-                    .setEmoji('▶')
-                    .setDisabled(true),
+    } else if (interaction.customId === 'autoplay') {
+        await interaction.deferUpdate();
+        if (!player) return interaction.followUp({ content: `The player doesn't exist`, ephemeral: true });
 
-                new ButtonBuilder()
-                    .setCustomId('skip')
-                    .setStyle(ButtonStyle.Secondary)
-                    .setEmoji('⏭')
-                    .setDisabled(true),
+        player.isAutoplay = !player.isAutoplay;
 
-                new ButtonBuilder()
-                    .setCustomId('skiped')
-                    .setStyle(ButtonStyle.Danger)
-                    .setLabel('Disconnected')
-                    .setDisabled(true)
-            )
-
-        return await interaction.message.edit({
-            components: [row]
-        })
+        if (player.trackData) {
+            const updatedEmbed = buildEmbed(player, player.trackData);
+            return interaction.message.edit({ embeds: [updatedEmbed] });
+        }
     }
 });
