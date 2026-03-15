@@ -1,5 +1,4 @@
 const { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder, AttachmentBuilder } = require("discord.js");
-const { Dynamic } = require("musicard");
 const client = require("../../client");
 
 function formatDuration(ms) {
@@ -53,26 +52,35 @@ function buildEmbed(player, track) {
 
 client.riffy.on('trackStart', async (player, track) => {
     const channel = client.channels.cache.get(player.textChannel);
+    if (!channel) return;
 
-    const musicard = await Dynamic({
-        thumbnailImage: track.info.thumbnail,
-        name: track.info.title,
-        author: track.info.author
-    });
+    try {
+        const albumArt = track.info.thumbnail || track.info.artworkUrl;
+        const embed = buildEmbed(player, track);
+        const row = buildRow();
+        player.trackData = track;
 
-    const attachment = new AttachmentBuilder(musicard, { name: 'musicard.png' });
-    const embed = buildEmbed(player, track);
-    const row = buildRow();
-
-    player.trackData = track;
-
-    const msg = await channel.send({
-        embeds: [embed],
-        files: [attachment],
-        components: [row]
-    });
-
-    player.message = msg;
+        if (albumArt) {
+            const { Bloom } = await import('musicard');
+            const musicard = await Bloom({
+                albumArt,
+                fallbackArt: albumArt,
+                trackName: track.info.title ?? 'Unknown',
+                artistName: track.info.author ?? 'Unknown',
+                timeAdjust: { timeStart: '0:00', timeEnd: formatDuration(track.info.length) },
+                progressBar: 0,
+                backgroundColor: '#000000'
+            });
+            const attachment = new AttachmentBuilder(musicard, { name: 'musicard.png' });
+            player.message = await channel.send({ embeds: [embed], files: [attachment], components: [row] });
+        } else {
+            embed.setImage(null);
+            player.message = await channel.send({ embeds: [embed], components: [row] });
+        }
+    } catch (err) {
+        console.error('[trackStart] Error:', err);
+        player.message = await channel.send({ content: `Now playing: **${track.info.title}** by \`${track.info.author}\`` });
+    }
 });
 
 module.exports = { buildEmbed, buildRow, formatDuration };

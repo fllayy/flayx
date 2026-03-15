@@ -8,12 +8,7 @@ client.on("clientReady", async () => {
     console.log("---------------------")
 
     client.user.setPresence({
-        activities: [
-            {
-                name: "You",
-                type: ActivityType.Watching
-            }
-        ],
-        status: "online"
+        activities: [{ name: 'Listen to /play', type: ActivityType.Listening }],
+        status: 'online'
     })
 })

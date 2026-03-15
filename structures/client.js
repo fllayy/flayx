@@ -1,5 +1,5 @@
 const { readdirSync } = require("fs");
-const { REST, Routes, Client, Collection } = require('discord.js');
+const { REST, Routes, Client, Collection, ActivityType } = require('discord.js');
 const { client_id, client_token, nodes } = require("./configuration/index");
 const { logger } = require("./functions/logger");
 const { Riffy } = require("riffy")
@@ -167,8 +167,13 @@ async function load_riffy() {
 }
 
 client.once('clientReady', async () => {
+    client.user.setPresence({
+        activities: [{ name: 'Starting...', type: ActivityType.Playing }],
+        status: 'dnd'
+    });
+
     client.riffy.init(client.user.id);
-    
+
     await load_events()
     await load_slash_commands()
     await load_riffy()
