@@ -177,4 +177,13 @@ client.once('clientReady', async () => {
     await load_events()
     await load_slash_commands()
     await load_riffy()
+
+    console.log("\n---------------------")
+    logger(`${client.user.tag} is ready`, "success")
+    console.log("---------------------")
+
+    client.user.setPresence({
+        activities: [{ name: 'Listen to /play', type: ActivityType.Listening }],
+        status: 'online'
+    });
 })

@@ -23,7 +23,7 @@ function buildRow() {
         new ButtonBuilder()
             .setCustomId('stop')
             .setLabel('Stop')
-            .setEmoji('🔴')
+            .setEmoji('⏹️')
             .setStyle(ButtonStyle.Danger),
         new ButtonBuilder()
             .setCustomId('autoplay')
@@ -38,12 +38,10 @@ function buildEmbed(player, track) {
     const queueLength = player.queue?.length ?? 0;
     const volume = player.volume ?? 100;
     const autoplay = player.isAutoplay ? 'enabled' : 'disabled';
-    const source = track.info.sourceName ?? 'unknown';
-
     return new EmbedBuilder()
         .setTitle('Music Controller | FLAYX')
         .setDescription(
-            `**Now Playing:**\n[${track.info.title}](${track.info.uri}) by \`${track.info.author}\`\n\nThis track was recommended via ${source}`
+            `**Now Playing:**\n[${track.info.title}](${track.info.uri}) by \`${track.info.author}\`\n\nRequested by ${track.info.requester?.displayName ?? track.info.requester?.username ?? 'Unknown'}`
         )
         .setImage('attachment://musicard.png')
         .setFooter({ text: `Queue Length: ${queueLength} | Duration: ${duration} | Volume: ${volume}% | Autoplay: ${autoplay}` })
@@ -61,7 +59,8 @@ client.riffy.on('trackStart', async (player, track) => {
         player.trackData = track;
 
         if (albumArt) {
-            const { Bloom } = await import('musicard');
+            const { Bloom, initializeFonts } = await import('musicard');
+            initializeFonts();
             const musicard = await Bloom({
                 albumArt,
                 fallbackArt: albumArt,

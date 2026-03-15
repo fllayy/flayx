@@ -1,14 +1,2 @@
-const { ActivityType } = require("discord.js");
-const client = require("../../client");
-const { logger } = require("../../functions/logger");
-
-client.on("clientReady", async () => {
-    console.log("\n---------------------")
-    logger(`${client.user.tag} is ready`, "success")
-    console.log("---------------------")
-
-    client.user.setPresence({
-        activities: [{ name: 'Listen to /play', type: ActivityType.Listening }],
-        status: 'online'
-    })
-})
+// Presence and ready log are handled in client.js once('clientReady')
+// to ensure they fire after all events/commands/riffy are loaded.
