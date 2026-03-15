@@ -5,11 +5,11 @@
     "": {
       "name": "riffy-music-bot",
       "dependencies": {
-        "ascii-table": "^0.0.9",
-        "colors": "^1.4.0",
-        "discord.js": "^14.14.1",
-        "moment": "^2.30.1",
-        "ms": "^2.1.3",
+        "ascii-table": "latest",
+        "colors": "latest",
+        "discord.js": "latest",
+        "moment": "latest",
+        "ms": "latest",
         "musicard": "latest",
         "riffy": "latest",
       },
@@ -122,7 +122,7 @@
 
     "ms": ["ms@2.1.3", "", {}, "sha512-6FlzubTLZG3J2a/NVCAleEhjzq5oxgHyaCU9yYXvcLsvoVaHJq/s5xXI6/XXP6tz7R9xAOtHnSO/tXtF3WRTlA=="],
 
-    "musicard": ["musicard@2.0.5", "", { "dependencies": { "@napi-rs/canvas": "^0.1.51", "cropify": "latest" } }, "sha512-XaK2OsKZ/Jc+9F1Z2S2S/FDEk0n+/s0ZnBt4CvwLB4vNl6MudXZMJ/9HQ5bdfLrNn7BT+mRtYCETIKu2aMHnEQ=="],
+    "musicard": ["musicard@3.0.1", "", { "dependencies": { "@napi-rs/canvas": "^0.1.83", "cropify": "^2.0.1" } }, "sha512-yrZ49mqnSFFulRR/h3xqroeS7Di/VN8jRYgRydYb9KXJKB/qeySGIjrkddB5n9kSHUQh1CY2QOrYfjldLLmDsQ=="],
 
     "nwsapi": ["nwsapi@2.2.22", "", {}, "sha512-ujSMe1OWVn55euT1ihwCI1ZcAaAU3nxUiDwfDQldc51ZXaB9m2AyOn6/jh1BLe2t/G8xd6uKG1UBF2aZJeg2SQ=="],
 
@@ -130,7 +130,7 @@
 
     "punycode": ["punycode@2.3.1", "", {}, "sha512-vYt7UD1U9Wg6138shLtLOvdAu+8DsC/ilFtEVHcH+wydcSpNE20AfSOduf6MkRFahL5FY7X1oU7nKVZFtfq8Fg=="],
 
-    "riffy": ["riffy@1.0.8", "", { "dependencies": { "jsdom": "^26.0.0", "undici": ">=6.11.1", "ws": "^8.16.0" } }, "sha512-zbqfabbg/k0f7OZZdNsb2Img7gnU0uyS1HA5y/8RQtBRUM6WcWx1iVKiQO+N2+ep7qfsvact4voeLnstQ0pq0Q=="],
+    "riffy": ["riffy@1.0.12", "", { "dependencies": { "jsdom": "^26.0.0", "undici": ">=6.11.1", "ws": "^8.16.0" } }, "sha512-rFVIERWq0FeKINDOTKobUamrvX9m4xdP8NTJfA8thYbLrkOfK6vgZ6UlTjHeBippjFq6xlPv7OGVT2INl6Y0hQ=="],
 
     "rrweb-cssom": ["rrweb-cssom@0.8.0", "", {}, "sha512-guoltQEx+9aMf2gDZ0s62EcV8lsXR+0w8915TC3ITdn2YueuNjdAYh/levpU9nFaoChh9RUS5ZdQMrKfVEN9tw=="],
 

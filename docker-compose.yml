@@ -42,17 +42,8 @@ services:
     restart: unless-stopped
     depends_on:
       - lavalink
-    environment:
-      - CLIENT_TOKEN=${CLIENT_TOKEN}
-      - CLIENT_ID=${CLIENT_ID}
-      - MONGODB_URL=${MONGODB_URL}
-      - DEVELOPERS=${DEVELOPERS}
-      - SHARDING=${SHARDING:-false}
-      - DATABASE=${DATABASE:-false}
-      - LAVALINK_HOST=lavalink
-      - LAVALINK_PORT=2333
-      - LAVALINK_PASSWORD=${LAVALINK_PASSWORD:-youshallnotpass}
-      - LAVALINK_SECURE=false
+    env_file:
+      - flayx.env
     networks:
       - lavalink_net
 
