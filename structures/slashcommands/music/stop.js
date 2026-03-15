@@ -6,6 +6,7 @@ module.exports = {
     player: true,
     run: async (client, interaction) => {
         const player = client.riffy.players.get(interaction.guildId);
+        if (player.message) await player.message.delete().catch(() => {});
         player.destroy();
 
         return interaction.reply(`Disconnected from the voice channel.`);

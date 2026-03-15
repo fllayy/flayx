@@ -36,11 +36,8 @@ client.on('interactionCreate', async (interaction) => {
         await interaction.deferUpdate();
         if (!player) return interaction.followUp({ content: `The player doesn't exist`, ephemeral: true });
 
+        if (player.message) await player.message.delete().catch(() => {});
         player.destroy();
-
-        return interaction.message.edit({
-            components: [buildDisabledRow('Stopped', ButtonStyle.Danger)]
-        });
 
     } else if (interaction.customId === 'autoplay') {
         await interaction.deferUpdate();

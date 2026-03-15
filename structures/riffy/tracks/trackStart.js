@@ -41,7 +41,7 @@ function buildEmbed(player, track) {
     return new EmbedBuilder()
         .setTitle('Music Controller | FLAYX')
         .setDescription(
-            `**Now Playing:**\n[${track.info.title}](${track.info.uri}) by \`${track.info.author}\`\n\nRequested by ${track.info.requester?.displayName ?? track.info.requester?.username ?? 'Unknown'}`
+            `**Now Playing:**\n[${track.info.title}](${track.info.uri}) by \`${track.info.author}\`\n\nRequested by ${track.info.requester?.displayName ?? track.info.requester?.username ?? 'Autoplay'}`
         )
         .setImage('attachment://musicard.png')
         .setFooter({ text: `Queue Length: ${queueLength} | Duration: ${duration} | Volume: ${volume}% | Autoplay: ${autoplay}` })
