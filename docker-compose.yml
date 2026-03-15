@@ -37,7 +37,7 @@ services:
 
   # Bot Discord
   bot:
-    image: ghcr.io/${GITHUB_REPOSITORY}:latest
+    image: ghcr.io/fllayy/flayx:latest
     container_name: flayx_bot
     restart: unless-stopped
     depends_on:
