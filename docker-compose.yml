@@ -1,5 +1,5 @@
 services:
-  # Service de déchiffrement des signatures YouTube
+  # Service de dechiffrement des signatures YouTube
   yt-cipher:
     image: ghcr.io/kikkia/yt-cipher:master
     container_name: ejs_signature_api
@@ -16,7 +16,7 @@ services:
 
   # Serveur Lavalink
   lavalink:
-    image: fredboat/lavalink:latest
+    image: ghcr.io/lavalink-devs/lavalink:latest
     container_name: lavalink_server
     restart: unless-stopped
     ports:
@@ -27,6 +27,12 @@ services:
       - _JAVA_OPTIONS=-Xmx1G
     depends_on:
       - yt-cipher
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c 'echo > /dev/tcp/127.0.0.1/2333'"]
+      interval: 10s
+      timeout: 5s
+      retries: 15
+      start_period: 30s
     logging:
       driver: "json-file"
       options:
@@ -35,13 +41,14 @@ services:
     networks:
       - lavalink_net
 
-  # Bot Discord
+  # FLAYX
   bot:
     image: ghcr.io/fllayy/flayx:latest
     container_name: flayx_bot
     restart: unless-stopped
     depends_on:
-      - lavalink
+      lavalink:
+        condition: service_healthy
     env_file:
       - flayx.env
     networks:

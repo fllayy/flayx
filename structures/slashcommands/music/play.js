@@ -10,6 +10,16 @@ module.exports = {
             description: 'The query to search for',
             type: ApplicationCommandOptionType.String,
             required: true,
+        },
+        {
+            name: 'source',
+            description: 'The platform to search on (default: YouTube)',
+            type: ApplicationCommandOptionType.String,
+            required: false,
+            choices: [
+                { name: 'YouTube', value: 'ytsearch' },
+                { name: 'SoundCloud', value: 'scsearch' },
+            ],
         }
     ],
 
@@ -23,6 +33,7 @@ module.exports = {
 
     run: async (client, interaction, args) => {
         const query = interaction.options.getString('query');
+        const source = interaction.options.getString('source') ?? 'ytsearch';
 
         const player = client.riffy.createConnection({
             guildId: interaction.guild.id,
@@ -31,7 +42,7 @@ module.exports = {
             deaf: true,
         })
 
-        const resolve = await client.riffy.resolve({ query: query, requester: interaction.member });
+        const resolve = await client.riffy.resolve({ query: query, requester: interaction.member, source });
         const { loadType, tracks, playlistInfo } = resolve;
 
         if (loadType === 'playlist') {
