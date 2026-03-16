@@ -72,17 +72,12 @@ module.exports = {
             }
 
             if (tracks.length) {
-                const lines = [];
-                let length = 0;
-                for (let i = 0; i < tracks.length; i++) {
-                    const line = `**${start + i + 1}.** [${tracks[i].info.title}](${tracks[i].info.uri})`;
-                    if (length + line.length + 1 > 1024) {
-                        lines.push(`*...and ${tracks.length - i} more on this page*`);
-                        break;
-                    }
-                    lines.push(line);
-                    length += line.length + 1;
-                }
+                const lines = tracks.map((track, i) => {
+                    const title = track.info.title.length > 40
+                        ? track.info.title.slice(0, 39) + '…'
+                        : track.info.title;
+                    return `**${start + i + 1}.** ${title}`;
+                });
                 embed.addFields({ name: 'Up Next', value: lines.join('\n') });
             } else if (!player.current) {
                 embed.setDescription('No tracks in queue.');
