@@ -1,6 +1,6 @@
 const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, ApplicationCommandOptionType } = require('discord.js');
 
-const ITEMS_PER_PAGE = 20;
+const ITEMS_PER_PAGE = 10;
 const TIMEOUT = 2 * 60 * 1000;
 
 module.exports = {
@@ -67,7 +67,7 @@ module.exports = {
             if (player.current) {
                 embed.addFields({
                     name: '▶ Now Playing',
-                    value: `[${player.current.info.title}](${player.current.info.uri})`,
+                    value: `**[${player.current.info.title}](${player.current.info.uri})**`,
                 });
             }
 
@@ -76,7 +76,7 @@ module.exports = {
                     const title = track.info.title.length > 40
                         ? track.info.title.slice(0, 39) + '…'
                         : track.info.title;
-                    return `**${start + i + 1}.** ${title}`;
+                    return `**${start + i + 1}.** [${title}](${track.info.uri})`;
                 });
                 embed.addFields({ name: 'Up Next', value: lines.join('\n') });
             } else if (!player.current) {
