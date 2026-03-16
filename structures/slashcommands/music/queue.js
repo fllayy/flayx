@@ -72,12 +72,18 @@ module.exports = {
             }
 
             if (tracks.length) {
-                embed.addFields({
-                    name: 'Up Next',
-                    value: tracks
-                        .map((track, i) => `**${start + i + 1}.** [${track.info.title}](${track.info.uri})`)
-                        .join('\n'),
-                });
+                const lines = [];
+                let length = 0;
+                for (let i = 0; i < tracks.length; i++) {
+                    const line = `**${start + i + 1}.** [${tracks[i].info.title}](${tracks[i].info.uri})`;
+                    if (length + line.length + 1 > 1024) {
+                        lines.push(`*...and ${tracks.length - i} more on this page*`);
+                        break;
+                    }
+                    lines.push(line);
+                    length += line.length + 1;
+                }
+                embed.addFields({ name: 'Up Next', value: lines.join('\n') });
             } else if (!player.current) {
                 embed.setDescription('No tracks in queue.');
             }
