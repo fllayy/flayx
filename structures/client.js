@@ -168,7 +168,7 @@ async function load_riffy() {
 
 client.once('clientReady', async () => {
     client.user.setPresence({
-        activities: [{ name: 'Starting...', type: ActivityType.Playing }],
+        activities: [{ name: 'Starting...', type: ActivityType.Listening }],
         status: 'dnd'
     });
 
@@ -183,7 +183,7 @@ client.once('clientReady', async () => {
     console.log("---------------------")
 
     client.user.setPresence({
-        activities: [{ name: 'Listen to /play', type: ActivityType.Listening }],
+        activities: [{ name: '/play', type: ActivityType.Playing }],
         status: 'online'
     });
 })
