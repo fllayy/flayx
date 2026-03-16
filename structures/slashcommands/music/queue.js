@@ -73,9 +73,10 @@ module.exports = {
 
             if (tracks.length) {
                 const lines = tracks.map((track, i) => {
-                    const title = track.info.title.length > 40
+                    const raw = track.info.title.length > 40
                         ? track.info.title.slice(0, 39) + '…'
                         : track.info.title;
+                    const title = raw.replace(/\[/g, '\\[').replace(/\]/g, '\\]');
                     return `**${start + i + 1}.** [${title}](${track.info.uri})`;
                 });
                 embed.addFields({ name: 'Up Next', value: lines.join('\n') });
