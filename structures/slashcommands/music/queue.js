@@ -1,4 +1,5 @@
 const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, ApplicationCommandOptionType } = require('discord.js');
+const { isAdminOrDJ } = require('../../functions/permissions');
 
 const ITEMS_PER_PAGE = 10;
 const TIMEOUT = 2 * 60 * 1000;
@@ -24,6 +25,9 @@ module.exports = {
 
         // /queue clear:all
         if (clearArg !== null) {
+            if (!await isAdminOrDJ(interaction.member, interaction.guild.id)) {
+                return interaction.reply({ content: `Tu dois être admin ou avoir le rôle DJ pour modifier la queue.`, ephemeral: true });
+            }
             if (clearArg.toLowerCase() === 'all') {
                 player.queue.splice(0);
                 return interaction.reply({ content: '🗑️ Queue cleared.', ephemeral: true });

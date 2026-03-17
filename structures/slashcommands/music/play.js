@@ -1,4 +1,5 @@
 const { Client, CommandInteraction, ApplicationCommandOptionType } = require('discord.js');
+const { getGuildSettings } = require('../../database/index');
 
 module.exports = {
     name: 'play',
@@ -48,6 +49,9 @@ module.exports = {
             textChannel: interaction.channel.id,
             deaf: true,
         })
+
+        const settings = await getGuildSettings(interaction.guild.id);
+        if (!player.playing && !player.paused) player.setVolume(settings.volume);
 
         const resolve = await client.riffy.resolve({ query: query, requester: interaction.member, source });
         const { loadType, tracks, playlistInfo } = resolve;

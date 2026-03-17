@@ -1,17 +1,23 @@
+const { isAdminOrDJ } = require('../../functions/permissions');
+
 module.exports = {
     name: 'resume',
     description: 'Resumes the current track',
     inVoice: true,
     sameVoice: true,
     player: true,
-    run: (client, interaction) => {
+    run: async (client, interaction) => {
+        if (!await isAdminOrDJ(interaction.member, interaction.guild.id)) {
+            return interaction.reply({ content: `Tu dois être admin ou avoir le rôle DJ pour utiliser cette commande.`, ephemeral: true });
+        }
+
         const player = client.riffy.players.get(interaction.guild.id);
 
         if (!player.paused) {
-            return interaction.reply(`The player is already playing song`);
-        } else {
-            player.pause(false);
-            return interaction.reply(`Resumed the current track.`);
+            return interaction.reply({ content: `The player is already playing`, ephemeral: true });
         }
+
+        player.pause(false);
+        return interaction.reply({ content: `Resumed the current track.`, ephemeral: true });
     },
 };

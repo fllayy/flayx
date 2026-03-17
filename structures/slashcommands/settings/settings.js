@@ -5,7 +5,7 @@ module.exports = {
     name: 'settings',
     description: 'Gérer les paramètres du bot sur ce serveur',
     guildOnly: true,
-    userPermissions: ['ManageGuild'],
+    userPermissions: ['KickMembers'],
     options: [
         {
             name: 'view',
