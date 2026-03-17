@@ -1,5 +1,5 @@
 services:
-  # Service de dechiffrement des signatures YouTube
+  # YT Cipher
   yt-cipher:
     image: ghcr.io/kikkia/yt-cipher:master
     container_name: ejs_signature_api
@@ -18,7 +18,7 @@ services:
     networks:
       - lavalink_net
 
-  # Serveur Lavalink
+  # Lavalink
   lavalink:
     image: ghcr.io/lavalink-devs/lavalink:latest
     container_name: lavalink_server
@@ -44,7 +44,7 @@ services:
     networks:
       - lavalink_net
 
-  # Base de données PostgreSQL
+  # PostgreSQL DB
   postgres:
     image: postgres:16-alpine
     container_name: flayx_db
