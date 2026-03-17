@@ -1,5 +1,6 @@
 const { ApplicationCommandOptionType } = require('discord.js');
 const { buildEmbed } = require('../../riffy/tracks/trackStart');
+const { isAdminOrDJ } = require('../../functions/permissions');
 
 module.exports = {
     name: 'autoplay',
@@ -20,6 +21,10 @@ module.exports = {
         }
     ],
     run: async (client, interaction) => {
+        if (!await isAdminOrDJ(interaction.member, interaction.guild.id)) {
+            return interaction.reply({ content: `Tu dois être admin ou avoir le rôle DJ pour utiliser cette commande.`, ephemeral: true });
+        }
+
         const player = client.riffy.players.get(interaction.guild.id);
         const state = interaction.options.getString('state');
 

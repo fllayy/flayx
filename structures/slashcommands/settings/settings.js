@@ -71,7 +71,7 @@ module.exports = {
                 .addFields(
                     { name: 'Volume', value: `${settings.volume}%`, inline: true },
                     { name: 'Rôle DJ', value: djRole ? `<@&${djRole.id}>` : 'Aucun', inline: true },
-                    { name: 'Temps en vocal', value: voiceTime, inline: true },
+                    { name: 'Temps en vocal', value: `\`${voiceTime}\``, inline: true },
                 )
                 .setThumbnail(interaction.guild.iconURL({ dynamic: true }))
                 .setTimestamp();

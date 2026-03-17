@@ -128,9 +128,13 @@ client.on('interactionCreate', async (interaction) => {
         return handleVoteButton(interaction, player, 'stop');
 
     } else if (interaction.customId === 'autoplay') {
-        await interaction.deferUpdate();
-        if (!player) return interaction.followUp({ content: `The player doesn't exist`, ephemeral: true });
+        if (!player) return interaction.reply({ content: `The player doesn't exist`, ephemeral: true });
 
+        if (!await isAdminOrDJ(interaction.member, interaction.guild.id)) {
+            return interaction.reply({ content: `Tu dois être admin ou avoir le rôle DJ pour utiliser ce bouton.`, ephemeral: true });
+        }
+
+        await interaction.deferUpdate();
         player.isAutoplay = !player.isAutoplay;
 
         if (player.trackData) {
