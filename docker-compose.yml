@@ -4,12 +4,6 @@ services:
     image: ghcr.io/kikkia/yt-cipher:master
     container_name: ejs_signature_api
     restart: unless-stopped
-    healthcheck:
-      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:8001/health 2>/dev/null || curl -sf http://127.0.0.1:8001/health 2>/dev/null || (echo > /dev/tcp/127.0.0.1/8001) 2>/dev/null"]
-      interval: 10s
-      timeout: 5s
-      retries: 10
-      start_period: 20s
     logging:
       driver: "json-file"
       options:
@@ -29,7 +23,7 @@ services:
       - _JAVA_OPTIONS=-Xmx1G
     depends_on:
       yt-cipher:
-        condition: service_healthy
+        condition: service_started
     healthcheck:
       test: ["CMD-SHELL", "bash -c 'echo > /dev/tcp/127.0.0.1/2333'"]
       interval: 10s
