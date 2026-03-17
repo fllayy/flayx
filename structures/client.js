@@ -3,6 +3,7 @@ const { REST, Routes, Client, Collection, ActivityType } = require('discord.js')
 const { client_id, client_token, nodes } = require("./configuration/index");
 const { logger } = require("./functions/logger");
 const { Riffy } = require("riffy")
+const { initDatabase } = require("./database/index")
 
 const client = new Client({
     intents: [
@@ -174,6 +175,7 @@ client.once('clientReady', async () => {
 
     client.riffy.init(client.user.id);
 
+    await initDatabase()
     await load_events()
     await load_slash_commands()
     await load_riffy()
