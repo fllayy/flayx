@@ -47,7 +47,7 @@ module.exports = {
                 if (v.messageRef) await v.messageRef.edit({ content: `✅ Vote de skip passé! Track skippée.`, components: [] }).catch(() => {});
             },
             onExpire: async (v) => {
-                if (v.messageRef) await v.messageRef.edit({ content: `❌ Vote de skip expiré (60s).`, components: [] }).catch(() => {});
+                if (v.messageRef) await v.messageRef.edit({ content: `❌ Vote de skip expiré — **${v.voters.size}/${needed}** votes.`, components: [] }).catch(() => {});
             },
         });
 
@@ -63,7 +63,7 @@ module.exports = {
 
         const count = getVote(guildId)?.voters.size ?? 1;
         const voteMsg = await interaction.reply({
-            content: `🗳️ Vote de **skip** lancé par ${member}!\n**${count}/${needed}** votes nécessaires (60s).\n\nUtilise \`/skip\` ou clique le bouton skip du player pour voter.`,
+            content: `🗳️ Vote de **skip** lancé!\n**${count}/${needed}** votes nécessaires (60s).\n\nUtilise \`/skip\` ou clique le bouton skip du player pour voter.`,
             fetchReply: true,
         });
         vote.messageRef = voteMsg;

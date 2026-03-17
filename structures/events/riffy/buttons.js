@@ -61,7 +61,7 @@ async function handleVoteButton(interaction, player, type) {
             if (v.messageRef) await v.messageRef.edit({ content: `✅ Vote de ${type} passé!`, components: [] }).catch(() => {});
         },
         onExpire: async (v) => {
-            if (v.messageRef) await v.messageRef.edit({ content: `❌ Vote de ${type} expiré (60s).`, components: [] }).catch(() => {});
+            if (v.messageRef) await v.messageRef.edit({ content: `❌ Vote de ${type} expiré — **${v.voters.size}/${needed}** votes.`, components: [] }).catch(() => {});
         },
     });
 
@@ -83,7 +83,7 @@ async function handleVoteButton(interaction, player, type) {
 
     const count = getVote(guildId)?.voters.size ?? 1;
     const voteMsg = await interaction.reply({
-        content: `🗳️ Vote de **${type}** lancé par ${member}!\n**${count}/${needed}** votes nécessaires (60s).\n\nClique le bouton ou utilise \`/${type}\` pour voter.`,
+        content: `🗳️ Vote de **${type}** lancé!\n**${count}/${needed}** votes nécessaires (60s).\n\nClique le bouton ou utilise \`/${type}\` pour voter.`,
         fetchReply: true,
     });
     vote.messageRef = voteMsg;

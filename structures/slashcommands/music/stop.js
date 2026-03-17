@@ -50,7 +50,7 @@ module.exports = {
                 if (v.messageRef) await v.messageRef.edit({ content: `✅ Vote de stop passé! Bot déconnecté.`, components: [] }).catch(() => {});
             },
             onExpire: async (v) => {
-                if (v.messageRef) await v.messageRef.edit({ content: `❌ Vote de stop expiré (60s).`, components: [] }).catch(() => {});
+                if (v.messageRef) await v.messageRef.edit({ content: `❌ Vote de stop expiré — **${v.voters.size}/${needed}** votes.`, components: [] }).catch(() => {});
             },
         });
 
@@ -67,7 +67,7 @@ module.exports = {
 
         const count = getVote(guildId)?.voters.size ?? 1;
         const voteMsg = await interaction.reply({
-            content: `🗳️ Vote de **stop** lancé par ${member}!\n**${count}/${needed}** votes nécessaires (60s).\n\nUtilise \`/stop\` ou clique le bouton stop du player pour voter.`,
+            content: `🗳️ Vote de **stop** lancé!\n**${count}/${needed}** votes nécessaires (60s).\n\nUtilise \`/stop\` ou clique le bouton stop du player pour voter.`,
             fetchReply: true,
         });
         vote.messageRef = voteMsg;
