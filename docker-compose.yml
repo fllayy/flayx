@@ -4,8 +4,12 @@ services:
     image: ghcr.io/kikkia/yt-cipher:master
     container_name: ejs_signature_api
     restart: unless-stopped
-    ports:
-      - "8001:8001"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:8001/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
     logging:
       driver: "json-file"
       options:
@@ -19,14 +23,13 @@ services:
     image: ghcr.io/lavalink-devs/lavalink:latest
     container_name: lavalink_server
     restart: unless-stopped
-    ports:
-      - "2333:2333"
     volumes:
       - ./application.yml:/opt/Lavalink/application.yml
     environment:
       - _JAVA_OPTIONS=-Xmx1G
     depends_on:
-      - yt-cipher
+      yt-cipher:
+        condition: service_healthy
     healthcheck:
       test: ["CMD-SHELL", "bash -c 'echo > /dev/tcp/127.0.0.1/2333'"]
       interval: 10s
@@ -51,6 +54,11 @@ services:
         condition: service_healthy
     env_file:
       - flayx.env
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
     networks:
       - lavalink_net
 
