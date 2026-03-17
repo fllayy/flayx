@@ -51,10 +51,8 @@ POSTGRES_HOST=postgres
 POSTGRES_PORT=5432
 POSTGRES_DB=flayx
 POSTGRES_USER=flayx
-POSTGRES_PASSWORD=change_me
+POSTGRES_PASSWORD=flayx_password
 ```
-
-> **Important :** Change `POSTGRES_PASSWORD` par un mot de passe sécurisé.
 
 ### 3. Lancer le bot
 
