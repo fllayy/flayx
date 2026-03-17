@@ -63,7 +63,7 @@ module.exports = {
 
         const count = getVote(guildId)?.voters.size ?? 1;
         const voteMsg = await interaction.reply({
-            content: `🗳️ Vote de **skip** lancé!\n**${count}/${needed}** votes nécessaires (60s).\n\nUtilise \`/skip\` ou clique le bouton skip du player pour voter.`,
+            content: `🗳️ Vote de **skip** lancé!\n**${count}/${needed}** votes nécessaires (60s).\n\nUtilise \`/skip\` ou clique sur le bouton skip du player pour voter.`,
             fetchReply: true,
         });
         vote.messageRef = voteMsg;

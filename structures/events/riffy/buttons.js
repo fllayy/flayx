@@ -83,7 +83,7 @@ async function handleVoteButton(interaction, player, type) {
 
     const count = getVote(guildId)?.voters.size ?? 1;
     const voteMsg = await interaction.reply({
-        content: `🗳️ Vote de **${type}** lancé!\n**${count}/${needed}** votes nécessaires (60s).\n\nClique le bouton ou utilise \`/${type}\` pour voter.`,
+        content: `🗳️ Vote de **${type}** lancé!\n**${count}/${needed}** votes nécessaires (60s).\n\nClique sur le bouton ou utilise \`/${type}\` pour voter.`,
         fetchReply: true,
     });
     vote.messageRef = voteMsg;
