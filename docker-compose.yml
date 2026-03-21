@@ -83,19 +83,6 @@ services:
     networks:
       - lavalink_net
 
-  # Watchtower - auto-update des images
-  watchtower:
-    image: containrrr/watchtower
-    container_name: watchtower
-    restart: unless-stopped
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-    environment:
-      - WATCHTOWER_CLEANUP=true
-      - WATCHTOWER_POLL_INTERVAL=300
-    networks:
-      - lavalink_net
-
 networks:
   lavalink_net:
     driver: bridge
