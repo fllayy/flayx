@@ -1,4 +1,4 @@
-const { Client, CommandInteraction, ApplicationCommandOptionType, EmbedBuilder } = require('discord.js');
+const { Client, CommandInteraction, ApplicationCommandOptionType, EmbedBuilder, PermissionsBitField } = require('discord.js');
 const { getGuildSettings, setGuildVolume, setGuildDjRole } = require('../../database/index');
 
 function formatDuration(ms) {
@@ -12,7 +12,6 @@ module.exports = {
     name: 'settings',
     description: 'Gérer les paramètres du bot sur ce serveur',
     guildOnly: true,
-    userPermissions: ['KickMembers'],
     options: [
         {
             name: 'view',
@@ -77,6 +76,12 @@ module.exports = {
                 .setTimestamp();
 
             return interaction.reply({ embeds: [embed], ephemeral: true });
+        }
+
+        if (subcommand === 'volume' || subcommand === 'dj') {
+            if (!interaction.channel.permissionsFor(interaction.member).has(PermissionsBitField.Flags.KickMembers)) {
+                return interaction.reply({ content: 'Vous devez être administrateur pour modifier les paramètres.', ephemeral: true });
+            }
         }
 
         if (subcommand === 'volume') {
