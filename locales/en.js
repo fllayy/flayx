@@ -116,4 +116,19 @@ module.exports = {
     settingsFieldLang:     `Language`,
     settingsFieldAnnounce: `Announce Channel`,
     settingsFieldVoiceTime:`Voice Time`,
+
+    // ping
+    pingTitle: `🏓 Pong!`,
+    pingWs:    `WebSocket`,
+    pingApi:   `API Latency`,
+
+    // help
+    helpTitle:             `🎵 FLAYX — Help`,
+    helpDescription:       `Here are all available commands. Use the menu below to explore by category.`,
+    helpTotalFooter:       (n) => `${n} commands in total`,
+    helpNavOnly:           `Only the person who ran this command can use this menu.`,
+    helpBackBtn:           `← Back`,
+    helpSelectPlaceholder: `Select a category…`,
+    helpCategoryLabels:    { information: 'Information', music: 'Music', settings: 'Settings' },
+    helpCategoryDesc:      (icon, label) => `${icon} ${label} commands`,
 };

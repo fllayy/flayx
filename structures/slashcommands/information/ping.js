@@ -1,16 +1,24 @@
-const { Client, CommandInteraction } = require("discord.js")
+const { EmbedBuilder } = require('discord.js');
+const { BLURPLE } = require('../../constants/colors');
+const { getLocale } = require('../../functions/i18n');
 
 module.exports = {
-    name: "ping",
-    description: "Obtain the bot's latency reading.",
-
-    /**
-     * 
-     * @param {Client} client 
-     * @param {CommandInteraction} interaction 
-     */
+    name: 'ping',
+    description: 'Check the bot latency.',
 
     run: async (client, interaction) => {
-        return interaction.reply(`${client.ws.ping}ms`)
-    }
-}
+        const t = await getLocale(interaction.guild.id);
+        const sent = await interaction.deferReply({ fetchReply: true });
+        const apiLatency = sent.createdTimestamp - interaction.createdTimestamp;
+
+        const embed = new EmbedBuilder()
+            .setColor(BLURPLE)
+            .setTitle(t.pingTitle)
+            .addFields(
+                { name: t.pingWs,  value: `\`${client.ws.ping}ms\``, inline: true },
+                { name: t.pingApi, value: `\`${apiLatency}ms\``,     inline: true },
+            );
+
+        return interaction.editReply({ embeds: [embed] });
+    },
+};

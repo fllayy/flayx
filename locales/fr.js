@@ -116,4 +116,19 @@ module.exports = {
     settingsFieldLang:     `Langue`,
     settingsFieldAnnounce: `Salon annonce`,
     settingsFieldVoiceTime:`Temps en vocal`,
+
+    // ping
+    pingTitle: `🏓 Pong !`,
+    pingWs:    `WebSocket`,
+    pingApi:   `Latence API`,
+
+    // help
+    helpTitle:             `🎵 FLAYX — Aide`,
+    helpDescription:       `Voici toutes les commandes disponibles. Utilise le menu ci-dessous pour explorer par catégorie.`,
+    helpTotalFooter:       (n) => `${n} commandes au total`,
+    helpNavOnly:           `Seul la personne ayant utilisé cette commande peut utiliser ce menu.`,
+    helpBackBtn:           `← Retour`,
+    helpSelectPlaceholder: `Sélectionner une catégorie…`,
+    helpCategoryLabels:    { information: 'Information', music: 'Musique', settings: 'Paramètres' },
+    helpCategoryDesc:      (icon, label) => `${icon} ${label} — commandes`,
 };
