@@ -2,6 +2,7 @@ const { ApplicationCommandOptionType, EmbedBuilder, PermissionsBitField, Channel
 const { BLURPLE } = require('../../constants/colors');
 const { getGuildSettings, setGuildVolume, setGuildDjRole, setGuildLanguage, setGuildAnnounceChannel } = require('../../database/index');
 const { getLocaleFromSettings, LOCALES } = require('../../functions/i18n');
+const { isAdmin, isAdminOrDJ } = require('../../functions/permissions');
 
 function formatDuration(ms) {
     const totalSec = Math.floor(ms / 1000);
@@ -113,19 +114,10 @@ module.exports = {
             return interaction.reply({ embeds: [embed], ephemeral: true });
         }
 
-        if (!interaction.channel.permissionsFor(interaction.member).has(PermissionsBitField.Flags.KickMembers)) {
-            return interaction.reply({ content: t.settingsNoPerms, ephemeral: true });
-        }
-
-        if (subcommand === 'volume') {
-            const volume = args.getInteger('value');
-            await setGuildVolume(guildId, volume);
-            const player = client.riffy.players.get(guildId);
-            if (player) player.setVolume(volume);
-            return interaction.reply({ content: t.settingsVolume(volume, !!player), ephemeral: true });
-        }
-
         if (subcommand === 'dj') {
+            if (!isAdmin(interaction.member)) {
+                return interaction.reply({ content: t.settingsNoPerms, ephemeral: true });
+            }
             const role = args.getRole('role');
             if (role.id === interaction.guild.id) {
                 return interaction.reply({ content: t.settingsDjEveryoneRole, ephemeral: true });
@@ -135,6 +127,18 @@ module.exports = {
             }
             await setGuildDjRole(guildId, role.id);
             return interaction.reply({ content: t.settingsDj(role.id), ephemeral: true });
+        }
+
+        if (!await isAdminOrDJ(interaction.member, guildId)) {
+            return interaction.reply({ content: t.settingsNoPerms, ephemeral: true });
+        }
+
+        if (subcommand === 'volume') {
+            const volume = args.getInteger('value');
+            await setGuildVolume(guildId, volume);
+            const player = client.riffy.players.get(guildId);
+            if (player) player.setVolume(volume);
+            return interaction.reply({ content: t.settingsVolume(volume, !!player), ephemeral: true });
         }
 
         if (subcommand === 'language') {
