@@ -1,15 +1,17 @@
-const client = require("../../client")
+const client = require("../../client");
+const { getLocale } = require("../../functions/i18n");
 
 client.riffy.on("queueEnd", async (player) => {
     const channel = client.channels.cache.get(player.textChannel);
-    
-    if (player.message) await player.message.delete();
+    const t = await getLocale(player.guildId);
+
+    if (player.message) await player.message.delete().catch(() => {});
 
     if (player.isAutoplay) {
         player._autoplayTriggered = true;
-        player.autoplay(player)
+        player.autoplay(player);
     } else {
         player.destroy();
-        channel.send("Queue has ended.");
+        if (channel) channel.send(t.queueEndMsg).catch(() => {});
     }
-})
+});

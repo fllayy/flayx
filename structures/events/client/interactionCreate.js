@@ -2,98 +2,73 @@ const { PermissionsBitField } = require("discord.js");
 const client = require("../../client");
 const { developers } = require("../../configuration/index");
 const { logger } = require("../../functions/logger");
-
+const { getLocale } = require("../../functions/i18n");
 
 client.on("interactionCreate", async (interaction) => {
     if (!interaction.isCommand()) return;
 
+    const t = await getLocale(interaction.guildId);
+
     try {
-        const command = client.slashCommands.get(interaction.commandName)
+        const command = client.slashCommands.get(interaction.commandName);
 
         const player = client.riffy.players.get(interaction.guildId);
-        const memberChannel = interaction.member.voice.channelId
+        const memberChannel = interaction.member.voice.channelId;
         const clientChannel = interaction.guild.members.me.voice.channelId;
 
         if (!command) {
-            return interaction.reply({
-                content: `${interaction.commandName} is not a valid command`,
-                ephemeral: true,
-            });
+            return interaction.reply({ content: t.cmdUnknown(interaction.commandName), ephemeral: true });
         }
 
         if (command.developerOnly) {
             if (!developers.includes(interaction.user.id)) {
-                return interaction.reply({
-                    content: `${interaction.commandName} is a developer only command`,
-                    ephemeral: true,
-                });
+                return interaction.reply({ content: t.cmdDevOnly(interaction.commandName), ephemeral: true });
             }
         }
 
         if (command.userPermissions) {
             if (!interaction.channel.permissionsFor(interaction.member).has(PermissionsBitField.resolve(command.userPermissions || []))) {
                 return interaction.reply({
-                    content: `You do not have the required permissions to use this command. You need the following permissions: ${command.userPermissions.join(", ")}`,
+                    content: t.cmdUserPerms(command.userPermissions.join(", ")),
                     ephemeral: true,
                 });
             }
         }
 
         if (command.clientPermissions) {
-            console.log(command.clientPermissions)
             if (!interaction.channel.permissionsFor(interaction.guild.members.me).has(PermissionsBitField.resolve(command.clientPermissions || []))) {
                 return interaction.reply({
-                    content: `I do not have the required permissions to use this command. I need the following permissions: ${command.clientPermissions.join(", ")}`,
+                    content: t.cmdBotPerms(command.clientPermissions.join(", ")),
                     ephemeral: true,
                 });
             }
         }
 
         if (command.guildOnly && !interaction.guildId) {
-            return interaction.reply({
-                content: `${interaction.commandName} is a guild only command`,
-                ephemeral: true,
-            });
+            return interaction.reply({ content: t.cmdGuildOnly(interaction.commandName), ephemeral: true });
         }
 
         if (command.inVoice && !memberChannel) {
-            if (!memberChannel) {
-                return interaction.reply({
-                    content: `You must be in a voice channel to use this command.`,
-                    ephemeral: true,
-                });
-            }
+            return interaction.reply({ content: t.cmdInVoice, ephemeral: true });
         }
 
         if (command.sameVoice && memberChannel !== clientChannel) {
-            return interaction.reply({
-                content: `You must be in the same voice channel as me to use this command.`,
-                ephemeral: true,
-            });
+            return interaction.reply({ content: t.cmdSameVoice, ephemeral: true });
         }
 
         if (command.player && !player) {
-            return interaction.reply({
-                content: `No music is currently playing.`,
-                ephemeral: true,
-            });
+            return interaction.reply({ content: t.cmdNoPlayer, ephemeral: true });
         }
 
         if (command.current && !player.current) {
-            return interaction.reply({
-                content: `I am not playing anything right now.`,
-                ephemeral: true,
-            });
+            return interaction.reply({ content: t.cmdNoCurrent, ephemeral: true });
         }
 
         await command.run(client, interaction, interaction.options);
     } catch (err) {
-        logger("An error occurred while processing a slash command:", "error")
-        console.log(err);
+        logger("An error occurred while processing a slash command:", "error");
+        console.error(err);
 
-        return interaction.reply({
-            content: `An error has occurred while processing a slash command: ${err}`,
-            flags: 64,
-        });
+        return interaction.reply({ content: t.cmdError(err), flags: 64 });
     }
 });

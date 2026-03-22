@@ -1,19 +1,11 @@
 const client = require("../../client");
-const { ActionRowBuilder, ButtonBuilder, ButtonStyle } = require("discord.js");
-const { buildEmbed, buildRow } = require("../../riffy/tracks/trackStart");
+const { ButtonStyle } = require("discord.js");
+const { buildEmbed, buildDisabledRow } = require("../../riffy/tracks/trackStart");
 const { isAdminOrDJ } = require("../../functions/permissions");
-const { startVote, addVote, getVote } = require("../../functions/voteManager");
+const { startVote, addVote, getVote, clearVote } = require("../../functions/voteManager");
+const { getLocale } = require("../../functions/i18n");
 
-function buildDisabledRow(label, style) {
-    return new ActionRowBuilder().addComponents(
-        new ButtonBuilder().setCustomId('skip').setLabel('Skip').setEmoji('➡️').setStyle(ButtonStyle.Secondary).setDisabled(true),
-        new ButtonBuilder().setCustomId('pause_resume').setLabel('Pause/Resume').setEmoji('⏸').setStyle(ButtonStyle.Secondary).setDisabled(true),
-        new ButtonBuilder().setCustomId('stop').setLabel('Stop').setEmoji('🔴').setStyle(ButtonStyle.Danger).setDisabled(true),
-        new ButtonBuilder().setCustomId('autoplay').setLabel(label).setStyle(style).setDisabled(true)
-    );
-}
-
-async function handleVoteButton(interaction, player, type) {
+async function handleVoteButton(interaction, player, type, t) {
     const guildId = interaction.guild.id;
     const member = interaction.member;
 
@@ -21,11 +13,11 @@ async function handleVoteButton(interaction, player, type) {
     const existingVote = getVote(guildId);
     if (existingVote) {
         if (existingVote.type !== type) {
-            return interaction.reply({ content: `Un vote de **${existingVote.type}** est déjà en cours.`, ephemeral: true });
+            return interaction.reply({ content: t.voteOtherRunning(existingVote.type), ephemeral: true });
         }
         const result = addVote(guildId, member.id);
         if (result?.alreadyVoted) {
-            return interaction.reply({ content: `Tu as déjà voté!`, ephemeral: true });
+            return interaction.reply({ content: t.voteAlreadyVoted, ephemeral: true });
         }
         if (result?.passed) {
             if (type === 'skip') {
@@ -35,14 +27,20 @@ async function handleVoteButton(interaction, player, type) {
                 if (player.message) await player.message.delete().catch(() => {});
                 player.destroy();
             }
-            return interaction.reply({ content: `✅ Vote passé!`, ephemeral: true });
+            return interaction.reply({ content: t.votePass, ephemeral: true });
         }
-        return interaction.reply({ content: `🗳️ Vote ajouté! **${result.count}/${result.needed}** votes.`, ephemeral: true });
+        // Update the vote message with the new count
+        if (existingVote.messageRef) {
+            await existingVote.messageRef.edit({
+                content: t.btnVoteUpdate(type, result.count, result.needed)
+            }).catch(() => {});
+        }
+        return interaction.reply({ content: t.voteAdded(result.count, result.needed), ephemeral: true });
     }
 
     // Start a new vote
     const voiceChannel = member.voice?.channel;
-    if (!voiceChannel) return interaction.reply({ content: `Tu dois être dans un salon vocal.`, ephemeral: true });
+    if (!voiceChannel) return interaction.reply({ content: t.btnNoVoice, ephemeral: true });
 
     const memberCount = voiceChannel.members.filter(m => !m.user.bot).size;
     const needed = Math.floor(memberCount / 2) + 1;
@@ -58,14 +56,17 @@ async function handleVoteButton(interaction, player, type) {
                 if (player.message) await player.message.delete().catch(() => {});
                 player.destroy();
             }
-            if (v.messageRef) await v.messageRef.edit({ content: `✅ Vote de ${type} passé!`, components: [] }).catch(() => {});
+            if (v.messageRef) await v.messageRef.edit({ content: t.btnVotePassRef(type), components: [] }).catch(() => {});
         },
         onExpire: async (v) => {
-            if (v.messageRef) await v.messageRef.edit({ content: `❌ Vote de ${type} expiré — **${v.voters.size}/${needed}** votes.`, components: [] }).catch(() => {});
+            if (v.messageRef) {
+                await v.messageRef.edit({ content: t.btnVoteExpire(type, v.voters.size, needed), components: [] }).catch(() => {});
+                setTimeout(() => v.messageRef?.delete().catch(() => {}), 5000);
+            }
         },
     });
 
-    if (!vote) return interaction.reply({ content: `Un vote est déjà en cours.`, ephemeral: true });
+    if (!vote) return interaction.reply({ content: t.voteAlreadyRunning, ephemeral: true });
 
     const addResult = addVote(guildId, member.id);
 
@@ -78,12 +79,12 @@ async function handleVoteButton(interaction, player, type) {
             if (player.message) await player.message.delete().catch(() => {});
             player.destroy();
         }
-        return interaction.reply({ content: `✅ Action effectuée.`, ephemeral: true });
+        return interaction.reply({ content: t.btnVoteAction, ephemeral: true });
     }
 
     const count = getVote(guildId)?.voters.size ?? 1;
     const voteMsg = await interaction.reply({
-        content: `🗳️ Vote de **${type}** lancé!\n**${count}/${needed}** votes nécessaires (60s).\n\nClique sur le bouton ou utilise \`/${type}\` pour voter.`,
+        content: t.btnVoteStart(type, count, needed),
         fetchReply: true,
     });
     vote.messageRef = voteMsg;
@@ -93,53 +94,56 @@ client.on('interactionCreate', async (interaction) => {
     if (!interaction.isButton()) return;
 
     const player = client.riffy.players.get(interaction.guild.id);
+    const t = await getLocale(interaction.guild.id);
 
     if (interaction.customId === 'pause_resume') {
-        if (!player) return interaction.reply({ content: `The player doesn't exist`, ephemeral: true });
+        if (!player) return interaction.reply({ content: t.btnNoPlayer, ephemeral: true });
 
         if (!await isAdminOrDJ(interaction.member, interaction.guild.id)) {
-            return interaction.reply({ content: `Tu dois être admin ou avoir le rôle DJ pour utiliser ce bouton.`, ephemeral: true });
+            return interaction.reply({ content: t.adminDjButton, ephemeral: true });
         }
 
         await interaction.deferUpdate();
         player.pause(!player.paused);
 
     } else if (interaction.customId === 'skip') {
-        if (!player) return interaction.reply({ content: `The player doesn't exist`, ephemeral: true });
+        if (!player) return interaction.reply({ content: t.btnNoPlayer, ephemeral: true });
 
         if (await isAdminOrDJ(interaction.member, interaction.guild.id)) {
+            clearVote(interaction.guild.id);
             await interaction.deferUpdate();
             player.stop();
             return interaction.message.edit({ components: [buildDisabledRow('Skipped', ButtonStyle.Success)] });
         }
 
-        return handleVoteButton(interaction, player, 'skip');
+        return handleVoteButton(interaction, player, 'skip', t);
 
     } else if (interaction.customId === 'stop') {
-        if (!player) return interaction.reply({ content: `The player doesn't exist`, ephemeral: true });
+        if (!player) return interaction.reply({ content: t.btnNoPlayer, ephemeral: true });
 
         if (await isAdminOrDJ(interaction.member, interaction.guild.id)) {
+            clearVote(interaction.guild.id);
             await interaction.deferUpdate();
             if (player.message) await player.message.delete().catch(() => {});
             player.destroy();
             return;
         }
 
-        return handleVoteButton(interaction, player, 'stop');
+        return handleVoteButton(interaction, player, 'stop', t);
 
     } else if (interaction.customId === 'autoplay') {
-        if (!player) return interaction.reply({ content: `The player doesn't exist`, ephemeral: true });
+        if (!player) return interaction.reply({ content: t.btnNoPlayer, ephemeral: true });
 
         if (!await isAdminOrDJ(interaction.member, interaction.guild.id)) {
-            return interaction.reply({ content: `Tu dois être admin ou avoir le rôle DJ pour utiliser ce bouton.`, ephemeral: true });
+            return interaction.reply({ content: t.adminDjButton, ephemeral: true });
         }
 
         await interaction.deferUpdate();
         player.isAutoplay = !player.isAutoplay;
 
         if (player.trackData) {
-            const updatedEmbed = buildEmbed(player, player.trackData);
-            return interaction.message.edit({ embeds: [updatedEmbed] });
+            const updatedEmbed = buildEmbed(player, player.trackData, t);
+            return interaction.message.edit({ embeds: [updatedEmbed] }).catch(() => {});
         }
     }
 });

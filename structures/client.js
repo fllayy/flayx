@@ -30,18 +30,18 @@ module.exports = client;
 
 client.login(client_token).catch((error) => {
     logger("Couldn't login to the bot. Please check the config file.", "error")
-    console.log(error)
+    console.error(error)
     return process.exit()
 })
 
 process.on('unhandledRejection', error => {
     logger("An unhandled rejection error occured.", "error")
-    console.log(error)
+    console.error(error)
 })
 
 process.on('uncaughtException', error => {
     logger("An uncaught exception error occured.", "error")
-    console.log(error)
+    console.error(error)
 })
 
 async function load_events() {
@@ -108,7 +108,7 @@ async function load_slash_commands() {
                 logger(`[SLASH] ${pull.name}`, "info")
             } catch (err) {
                 logger(`Couldn't load the slash command ${file}, error: ${err}`, "error")
-                console.log(err)
+                console.error(err)
                 continue;
             }
         }
@@ -131,7 +131,7 @@ async function load_slash_commands() {
         })
     } catch (err) {
         logger("Couldn't register application commands.", "error")
-        console.log(err);
+        console.error(err);
     }
 }
 
@@ -158,7 +158,7 @@ async function load_riffy() {
                 logger(`[RIFFY] ${pull.name}`, "info")
             } catch (err) {
                 logger(`Couldn't load the riffy event ${file}, error: ${err}`, "error")
-                console.log(err)
+                console.error(err)
                 continue;
             }
         }

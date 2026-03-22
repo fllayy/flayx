@@ -1,5 +1,7 @@
 const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, ApplicationCommandOptionType } = require('discord.js');
+const { DARK } = require('../../constants/colors');
 const { isAdminOrDJ } = require('../../functions/permissions');
+const { getLocale } = require('../../functions/i18n');
 
 const ITEMS_PER_PAGE = 10;
 const TIMEOUT = 2 * 60 * 1000;
@@ -20,40 +22,32 @@ module.exports = {
     ],
 
     run: async (client, interaction, options) => {
+        const t = await getLocale(interaction.guild.id);
         const player = client.riffy.players.get(interaction.guild.id);
         const clearArg = options.getString('clear');
 
-        // /queue clear:all
         if (clearArg !== null) {
             if (!await isAdminOrDJ(interaction.member, interaction.guild.id)) {
-                return interaction.reply({ content: `Tu dois être admin ou avoir le rôle DJ pour modifier la queue.`, ephemeral: true });
+                return interaction.reply({ content: t.queueNoPerms, ephemeral: true });
             }
             if (clearArg.toLowerCase() === 'all') {
                 player.queue.splice(0);
-                return interaction.reply({ content: '🗑️ Queue cleared.', ephemeral: true });
+                return interaction.reply({ content: t.queueCleared, ephemeral: true });
             }
 
-            // /queue clear:<index>
             const index = parseInt(clearArg, 10);
             if (isNaN(index) || index < 1 || index > player.queue.length) {
-                return interaction.reply({
-                    content: `❌ Invalid index. The queue has **${player.queue.length}** track(s). Use a number between 1 and ${player.queue.length}.`,
-                    ephemeral: true,
-                });
+                return interaction.reply({ content: t.queueInvalidIndex(player.queue.length), ephemeral: true });
             }
 
             const [removed] = player.queue.splice(index - 1, 1);
-            return interaction.reply({
-                content: `🗑️ Removed **${removed.info.title}** from the queue.`,
-                ephemeral: true,
-            });
+            return interaction.reply({ content: t.queueRemoved(removed.info.title), ephemeral: true });
         }
 
-        // /queue — show paginated queue
         const queue = player.queue;
 
         if (!queue.length && !player.current) {
-            return interaction.reply({ content: '📭 The queue is empty.', ephemeral: true });
+            return interaction.reply({ content: t.queueEmpty, ephemeral: true });
         }
 
         const totalPages = Math.max(1, Math.ceil(queue.length / ITEMS_PER_PAGE));
@@ -64,13 +58,13 @@ module.exports = {
             const tracks = queue.slice(start, start + ITEMS_PER_PAGE);
 
             const embed = new EmbedBuilder()
-                .setColor('#2f3136')
-                .setTitle('🎵 Current Queue')
-                .setFooter({ text: `Page ${page + 1}/${totalPages} • ${queue.length} track(s) in queue` });
+                .setColor(DARK)
+                .setTitle(t.queueTitle)
+                .setFooter({ text: t.queueFooter(page + 1, totalPages, queue.length) });
 
             if (player.current) {
                 embed.addFields({
-                    name: '▶ Now Playing',
+                    name: t.queueNowPlaying,
                     value: `**[${player.current.info.title}](${player.current.info.uri})**`,
                 });
             }
@@ -83,9 +77,9 @@ module.exports = {
                     const title = raw.replace(/\[/g, '(').replace(/\]/g, ')');
                     return `**${start + i + 1}.** [${title}](${track.info.uri})`;
                 });
-                embed.addFields({ name: 'Up Next', value: lines.join('\n') });
+                embed.addFields({ name: t.queueUpNext, value: lines.join('\n') });
             } else if (!player.current) {
-                embed.setDescription('No tracks in queue.');
+                embed.setDescription(t.queueEmpty);
             }
 
             return embed;
@@ -118,7 +112,7 @@ module.exports = {
 
         collector.on('collect', async (btn) => {
             if (btn.user.id !== interaction.user.id) {
-                return btn.reply({ content: 'Only the person who ran this command can navigate the queue.', ephemeral: true });
+                return btn.reply({ content: t.queueNavOnly, ephemeral: true });
             }
 
             await btn.deferUpdate();
@@ -126,10 +120,7 @@ module.exports = {
             if (btn.customId === 'queue_prev' && currentPage > 0) currentPage--;
             if (btn.customId === 'queue_next' && currentPage < totalPages - 1) currentPage++;
 
-            await reply.edit({
-                embeds: [buildEmbed(currentPage)],
-                components: [buildRow(currentPage)],
-            });
+            await reply.edit({ embeds: [buildEmbed(currentPage)], components: [buildRow(currentPage)] });
         });
 
         collector.on('end', async () => {
