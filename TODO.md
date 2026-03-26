@@ -1,4 +1,5 @@
 - Migrate from Lavalink to NodeLink
+- Live specific player
 - Add command like jukebox, filters
 - Add ADMIN commands
 - Put all in place to do HA, with riffy conf to have more than one NodeLink server, sharding discord bot
