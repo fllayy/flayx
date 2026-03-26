@@ -12,24 +12,22 @@ services:
     networks:
       - lavalink_net
 
-  # Lavalink
-  lavalink:
-    image: ghcr.io/lavalink-devs/lavalink:latest
-    container_name: lavalink_server
+  # NodeLink
+  nodelink:
+    image: performanc/nodelink:latest
+    container_name: nodelink_server
     restart: unless-stopped
     volumes:
-      - ./application.yml:/opt/Lavalink/application.yml
-    environment:
-      - _JAVA_OPTIONS=-Xmx1G
+      - ./config.js:/app/config.js
     depends_on:
       yt-cipher:
         condition: service_started
     healthcheck:
-      test: ["CMD-SHELL", "bash -c 'echo > /dev/tcp/127.0.0.1/2333'"]
+      test: ["CMD-SHELL", "nc -z 127.0.0.1 3000 || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 15
-      start_period: 30s
+      start_period: 20s
     logging:
       driver: "json-file"
       options:
@@ -69,7 +67,7 @@ services:
     container_name: flayx_bot
     restart: unless-stopped
     depends_on:
-      lavalink:
+      nodelink:
         condition: service_healthy
       postgres:
         condition: service_healthy
