@@ -106,25 +106,25 @@ export default {
   unifiedSearchSources: ['youtube', 'soundcloud'],
   sources: {
     vkmusic: {
-      enabled: true,
+      enabled: false,
       userToken: '', // (optional) get from vk in browser devtools -> reqs POST /?act=web_token HTTP/2 - headers -> response -> access_token
       userCookie: '' // (required without userToken) get from vk in browser devtools -> reqs POST /?act=web_token HTTP/2 - headers -> request -> cookie (copy full cookie header)
     },
     amazonmusic: {
-      enabled: true
+      enabled: false
     },
     bluesky: {
-      enabled: true
+      enabled: false
     },
     anghami: {
       enabled: false,
       cookies: '' // Optional: Useful for accessing restricted or private content
     },
     rss: {
-      enabled: true
+      enabled: false
     },
     songlink: {
-      enabled: true,
+      enabled: false,
       apiKey: '',
       userCountry: 'US',
       songIfSingle: true,
@@ -149,15 +149,15 @@ export default {
       fallbackToAny: true
     },
     mixcloud: {
-      enabled: true
+      enabled: false
     },
     audiomack: {
-      enabled: true
+      enabled: false
     },
     deezer: {
       // arl: '',
       // decryptionKey: '',
-      enabled: true
+      enabled: false
     },
     bandcamp: {
       enabled: true
@@ -167,14 +167,14 @@ export default {
       // clientId: ""
     },
     local: {
-      enabled: true,
+      enabled: false,
       basePath: './local-music/'
     },
     http: {
-      enabled: true
+      enabled: false
     },
     eternalbox: {
-      enabled: true,
+      enabled: false,
       baseUrl: 'https://eternalboxmirror.xyz',
       searchResults: 30,
       enrichSpotify: true,
@@ -210,27 +210,27 @@ export default {
       enabled: true,
     },
     iheartradio: {
-      enabled: true
+      enabled: false
     },
     telegram: {
-      enabled: true
+      enabled: false
     },
     shazam: {
-      enabled: true,
+      enabled: false,
       allowExplicit: true
     },
     bilibili: {
-      enabled: true,
+      enabled: false,
       sessdata: '' // Optional, improves access to some videos (premium and 4k+)
     },
     genius: {
-      enabled: true
+      enabled: false
     },
     pinterest: {
-      enabled: true
+      enabled: false
     },
     flowery: {
-      enabled: true,
+      enabled: false,
       voice: 'Salli',
       translate: false,
       silence: 0,
@@ -238,13 +238,13 @@ export default {
       enforceConfig: false
     },
     jiosaavn: {
-      enabled: true,
+      enabled: false,
       playlistLoadLimit: 50,
       artistLoadLimit: 20
       // "secretKey": "38346591" // Optional, defaults to standard key
     },
     gaana: {
-      enabled: true,
+      enabled: false,
       apiUrl: 'https://gaana.1lucas1apk.fun/api', // if you want to host your server https://github.com/notdeltaxd/Gaana-API
       streamQuality: 'high',
       playlistLoadLimit: 100,
@@ -252,7 +252,7 @@ export default {
       artistLoadLimit: 100
     },
     "google-tts": {
-      enabled: true,
+      enabled: false,
       language: 'en-US'
     },
     // Piper TTS Configuration
@@ -292,16 +292,16 @@ export default {
       }
     },
     instagram: {
-      enabled: true
+      enabled: false
     },
     kwai: {
-      enabled: true
+      enabled: false
     },
     twitch: {
       enabled: true
     },
     spotify: {
-      enabled: true,
+      enabled: false,
       clientId: '',
       clientSecret: '',
       externalAuthUrl: 'http://get.1lucas1apk.fun/spotify/gettoken', // URL to external token provider (e.g. http://localhost:8080/api/token - use https://github.com/topi314/spotify-tokener or https://github.com/1Lucas1apk/gettoken)
@@ -314,7 +314,7 @@ export default {
       sp_dc: '' // fot getting mobile token (optional) get from spotify in browser devtools -> Application -> Cookies -> sp_dc (requered for canvas)
     },
     applemusic: {
-      enabled: true,
+      enabled: false,
       mediaApiToken: 'token_here', //manually | or "token_here" to get a token automatically
       market: 'US',
       playlistLoadLimit: 0,
@@ -324,7 +324,7 @@ export default {
       allowExplicit: true
     },
     audius: {
-      enabled: true,
+      enabled: false,
       appName: '',
       apiKey: '', // go to https://audius.co/settings and create an app and paste the app name and api stuff into here.
       apiSecret: '',
@@ -332,45 +332,45 @@ export default {
       albumLoadLimit: 100
     },
     tidal: {
-      enabled: true,
+      enabled: false,
       token: 'token_here', //manually | or "token_here" to get a token automatically, get from tidal web player devtools; using login google account
       countryCode: 'US',
       playlistLoadLimit: 2, // 0 = no limit, 1 = 50 tracks, 2 = 100 tracks, etc.
       playlistPageLoadConcurrency: 5 // How many pages to load simultaneously
     },
     pandora: {
-      enabled: true,
+      enabled: false,
       // Optional, setting this manually can help unblocking countries (since pandora is US only.). May need to be updated periodically.
       // fetching manually: use a vpn connected to US, go on pandora.com, open devtools, Network tab, first request to appear and copy the 2nd csrfToken= value.
       // csrfToken: '',
       remoteTokenUrl: 'https://get.1lucas1apk.fun/pandora/gettoken' // URL to a remote provider that returns { success: true, authToken: "...", csrfToken: "...", expires_in_seconds: ... } //https://github.com/1Lucas1apk/gettoken
     },
     nicovideo: {
-      enabled: true
+      enabled: false
     },
     reddit: {
-      enabled: true
+      enabled: false
     },
     tumblr: {
-      enabled: true
+      enabled: false
     },
     twitter: {
-      enabled: true
+      enabled: false
     },
     qobuz: {
-      enabled: true,
+      enabled: false,
       userToken: '', // (optional) get from play.qobuz.com in browser devtools -> Application -> Local Storage -> localuser -> token
       formatId: '5', // 5 = MP3 320kbps, 6 = FLAC (requires Studio subscription), 27 = Hi-Res FLAC
       allowExplicit: true
     },
     lastfm: {
-      enabled: true
+      enabled: false
     },
     letrasmus: {
-      enabled: true
+      enabled: false
     },
     yandexmusic: {
-      enabled: true,
+      enabled: false,
       accessToken: '',
       allowUnavailable: false,
       allowExplicit: true,

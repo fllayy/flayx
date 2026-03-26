@@ -47,11 +47,7 @@ module.exports = {
             required: false,
             choices: [
                 { name: 'YouTube', value: 'ytsearch' },
-                { name: 'YouTube Music', value: 'ytmsearch' },
                 { name: 'SoundCloud', value: 'scsearch' },
-                { name: 'Spotify', value: 'spsearch' },
-                { name: 'Apple Music', value: 'amsearch' },
-                { name: 'Yandex Music', value: 'ymsearch' },
                 { name: 'Twitch', value: 'twitchsearch' },
                 { name: 'Bandcamp', value: 'bcsearch' },
                 { name: 'Vimeo', value: 'vmsearch' },
