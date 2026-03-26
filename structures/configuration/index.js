@@ -5,10 +5,10 @@ module.exports = {
     sharding: process.env.SHARDING === "false",
     nodes: [
         {
-            host: process.env.LAVALINK_HOST || "lavalink",
-            port: parseInt(process.env.LAVALINK_PORT) || 2333,
-            password: process.env.LAVALINK_PASSWORD || "youshallnotpass",
-            secure: process.env.LAVALINK_SECURE === "false"
+            host: process.env.NODELINK_HOST || process.env.LAVALINK_HOST || "nodelink",
+            port: parseInt(process.env.NODELINK_PORT || process.env.LAVALINK_PORT) || 3000,
+            password: process.env.NODELINK_PASSWORD || process.env.LAVALINK_PASSWORD || "youshallnotpass",
+            secure: (process.env.NODELINK_SECURE || process.env.LAVALINK_SECURE) === "true"
         }
     ]
 }
