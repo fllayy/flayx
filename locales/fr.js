@@ -83,6 +83,7 @@ module.exports = {
         `**En lecture :**\n[${title}](${uri}) par \`${author}\`\n\nDemandé par ${requester}`,
     trackFooter:       (queue, duration, volume, autoplay, loop) =>
         `File : ${queue} | Durée : ${duration} | Volume : ${volume}% | Autoplay : ${autoplay}${loop}`,
+    trackLive:         `🔴 EN DIRECT`,
     trackAutoplayOn:   `activé`,
     trackAutoplayOff:  `désactivé`,
     trackLoopIcons:    { track: '🔂 Piste', queue: '🔁 Queue' },
@@ -116,6 +117,24 @@ module.exports = {
     settingsFieldLang:     `Langue`,
     settingsFieldAnnounce: `Salon annonce`,
     settingsFieldVoiceTime:`Temps en vocal`,
+
+    // filters
+    filterOn:     (name) => `🎛️ Filtre **${name}** activé.`,
+    filterOff:    (name) => `🎛️ Filtre **${name}** désactivé.`,
+    filterClear:  `🎛️ Tous les filtres ont été supprimés.`,
+    filterLabels: {
+        karaoke:    'Karaoke',
+        nightcore:  'Nightcore',
+        vaporwave:  'Vaporwave',
+        '8d':       '8D Audio',
+        bassboost:  'Bass Boost',
+        slowmode:   'Slowmode',
+        tremolo:    'Tremolo',
+        vibrato:    'Vibrato',
+        rotation:   'Rotation',
+        distortion: 'Distortion',
+        lowpass:    'Low Pass',
+    },
 
     // ping
     pingTitle: `🏓 Pong !`,
