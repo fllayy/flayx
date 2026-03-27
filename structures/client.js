@@ -1,6 +1,6 @@
 const { readdirSync } = require("fs");
 const { REST, Routes, Client, Collection, ActivityType } = require('discord.js');
-const { client_id, client_token, nodes } = require("./configuration/index");
+const { client_id, client_token, nodes, dev_guild_id } = require("./configuration/index");
 const { logger } = require("./functions/logger");
 const { Riffy } = require("riffy")
 const { initDatabase } = require("./database/index")
@@ -80,9 +80,10 @@ async function load_slash_commands() {
     logger("INITIATING SLASH COMMANDS", "debug")
 
     const slash = [];
+    const devSlash = [];
 
     const dirs = readdirSync('./structures/slashcommands/');
-    
+
     for (const dir of dirs) {
         const commands = readdirSync(`./structures/slashcommands/${dir}`).filter((file) => file.endsWith(".js"));
 
@@ -100,7 +101,11 @@ async function load_slash_commands() {
                     data[key.toLowerCase()] = pull[key];
                 }
 
-                slash.push(data);
+                if (pull.devGuildOnly) {
+                    devSlash.push(data);
+                } else {
+                    slash.push(data);
+                }
 
                 pull.category = dir;
                 client.slashCommands.set(pull.name, pull);
@@ -124,11 +129,17 @@ async function load_slash_commands() {
     const rest = new REST({ version: '10' }).setToken(client_token);
 
     try {
-        await rest.put(Routes.applicationCommands(client_id), { body: slash }).then(() => {
-            console.log("\n---------------------")
-            logger("Successfully registered application commands.", "success")
-            console.log("---------------------")
-        })
+        await rest.put(Routes.applicationCommands(client_id), { body: slash });
+        logger("Successfully registered global application commands.", "success")
+
+        if (devSlash.length > 0) {
+            if (!dev_guild_id) {
+                logger("DEV_GUILD_ID is not set — skipping dev command registration.", "warn")
+            } else {
+                await rest.put(Routes.applicationGuildCommands(client_id, dev_guild_id), { body: devSlash });
+                logger(`Successfully registered ${devSlash.length} dev command(s) on guild ${dev_guild_id}.`, "success")
+            }
+        }
     } catch (err) {
         logger("Couldn't register application commands.", "error")
         console.error(err);
