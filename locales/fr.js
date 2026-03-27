@@ -118,6 +118,24 @@ module.exports = {
     settingsFieldAnnounce: `Salon annonce`,
     settingsFieldVoiceTime:`Temps en vocal`,
 
+    // filters
+    filterOn:     (name) => `🎛️ Filtre **${name}** activé.`,
+    filterOff:    (name) => `🎛️ Filtre **${name}** désactivé.`,
+    filterClear:  `🎛️ Tous les filtres ont été supprimés.`,
+    filterLabels: {
+        karaoke:    'Karaoke',
+        nightcore:  'Nightcore',
+        vaporwave:  'Vaporwave',
+        '8d':       '8D Audio',
+        bassboost:  'Bass Boost',
+        slowmode:   'Slowmode',
+        tremolo:    'Tremolo',
+        vibrato:    'Vibrato',
+        rotation:   'Rotation',
+        distortion: 'Distortion',
+        lowpass:    'Low Pass',
+    },
+
     // ping
     pingTitle: `🏓 Pong !`,
     pingWs:    `WebSocket`,

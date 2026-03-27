@@ -118,6 +118,24 @@ module.exports = {
     settingsFieldAnnounce: `Announce Channel`,
     settingsFieldVoiceTime:`Voice Time`,
 
+    // filters
+    filterOn:     (name) => `🎛️ Filter **${name}** enabled.`,
+    filterOff:    (name) => `🎛️ Filter **${name}** disabled.`,
+    filterClear:  `🎛️ All filters cleared.`,
+    filterLabels: {
+        karaoke:    'Karaoke',
+        nightcore:  'Nightcore',
+        vaporwave:  'Vaporwave',
+        '8d':       '8D Audio',
+        bassboost:  'Bass Boost',
+        slowmode:   'Slowmode',
+        tremolo:    'Tremolo',
+        vibrato:    'Vibrato',
+        rotation:   'Rotation',
+        distortion: 'Distortion',
+        lowpass:    'Low Pass',
+    },
+
     // ping
     pingTitle: `🏓 Pong!`,
     pingWs:    `WebSocket`,
