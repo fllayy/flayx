@@ -75,6 +75,9 @@ client.on("interactionCreate", async (interaction) => {
         logger("An error occurred while processing a slash command:", "error");
         console.error(err);
 
-        return interaction.reply({ content: t.cmdError(err), flags: 64 });
+        const errReply = { content: t.cmdError(err), flags: 64 };
+        return interaction.deferred || interaction.replied
+            ? interaction.editReply(errReply)
+            : interaction.reply(errReply);
     }
 });

@@ -177,9 +177,10 @@ module.exports = {
             }
 
             const STATUS = ['READY', 'CONNECTING', 'RECONNECTING', 'IDLE', 'NEARLY', 'DISCONNECTED', 'WAITING_FOR_GUILDS', 'IDENTIFYING', 'RESUMING'];
-            const lines = [...shards.values()].map(s =>
-                `Shard \`${s.id}\` — ${STATUS[s.status] ?? s.status} — \`${s.ping}ms\` — \`${s.guilds.size}\` guilds`
-            ).join('\n');
+            const lines = [...shards.values()].map(s => {
+                const guildCount = client.guilds.cache.filter(g => g.shardId === s.id).size;
+                return `Shard \`${s.id}\` — ${STATUS[s.status] ?? s.status} — \`${s.ping}ms\` — \`${guildCount}\` guilds`;
+            }).join('\n');
 
             const embed = new EmbedBuilder()
                 .setColor(BLURPLE)
