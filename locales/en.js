@@ -83,6 +83,7 @@ module.exports = {
         `**Now Playing:**\n[${title}](${uri}) by \`${author}\`\n\nRequested by ${requester}`,
     trackFooter:       (queue, duration, volume, autoplay, loop) =>
         `Queue Length: ${queue} | Duration: ${duration} | Volume: ${volume}% | Autoplay: ${autoplay}${loop}`,
+    trackLive:         `🔴 LIVE`,
     trackAutoplayOn:   `enabled`,
     trackAutoplayOff:  `disabled`,
     trackLoopIcons:    { track: '🔂 Track', queue: '🔁 Queue' },

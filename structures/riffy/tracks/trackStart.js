@@ -75,7 +75,8 @@ function buildDisabledRow(label, style) {
  * @returns {import('discord.js').EmbedBuilder}
  */
 function buildEmbed(player, track, t = en) {
-    const duration = formatDuration(track.info.length);
+    const isLive = track.info.isStream === true || track.info.length === 0;
+    const duration = isLive ? t.trackLive : formatDuration(track.info.length);
     const queueLength = player.queue?.length ?? 0;
     const volume = player.volume ?? 100;
     const autoplay = player.isAutoplay ? t.trackAutoplayOn : t.trackAutoplayOff;
@@ -104,6 +105,7 @@ client.riffy.on('trackStart', async (player, track) => {
 
     try {
         const albumArt = track.info.thumbnail || track.info.artworkUrl;
+        const isLive = track.info.isStream === true || track.info.length === 0;
         const embed = buildEmbed(player, track, t);
         const row = buildRow();
         player.trackData = track;
@@ -116,8 +118,10 @@ client.riffy.on('trackStart', async (player, track) => {
                 fallbackArt: albumArt,
                 trackName: track.info.title ?? 'Unknown',
                 artistName: track.info.author ?? 'Unknown',
-                timeAdjust: { timeStart: '0:00', timeEnd: formatDuration(track.info.length) },
-                progressBar: 0,
+                timeAdjust: isLive
+                    ? { timeStart: '◉ LIVE', timeEnd: '∞' }
+                    : { timeStart: '0:00', timeEnd: formatDuration(track.info.length) },
+                progressBar: isLive ? 1 : 0,
                 backgroundColor: '#000000'
             });
             const attachment = new AttachmentBuilder(musicard, { name: 'musicard.png' });
@@ -127,8 +131,8 @@ client.riffy.on('trackStart', async (player, track) => {
             player.message = await channel.send({ embeds: [embed], components: [row] });
         }
 
-        // Seek to timestamp if set by /play (YouTube ?t= support)
-        if (player._seekOnStart) {
+        // Seek to timestamp if set by /play (YouTube ?t= support) — not applicable for live streams
+        if (!isLive && player._seekOnStart) {
             player.seekTo(player._seekOnStart);
             player._seekOnStart = null;
         }
