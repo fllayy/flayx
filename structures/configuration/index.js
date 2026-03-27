@@ -2,7 +2,7 @@ module.exports = {
     client_token: process.env.CLIENT_TOKEN,
     client_id: process.env.CLIENT_ID,
     developers: process.env.DEVELOPERS ? process.env.DEVELOPERS.split(",") : [],
-    dev_guild_id: process.env.DEV_GUILD_ID || null,
+    dev_guild_ids: process.env.DEV_GUILD_ID ? process.env.DEV_GUILD_ID.split(",") : [],
     sharding: process.env.SHARDING === "false",
     nodes: (() => {
         const nodes = [];

@@ -1,6 +1,6 @@
 const { PermissionsBitField } = require("discord.js");
 const client = require("../../client");
-const { developers, dev_guild_id } = require("../../configuration/index");
+const { developers, dev_guild_ids } = require("../../configuration/index");
 const { logger } = require("../../functions/logger");
 const { getLocale } = require("../../functions/i18n");
 
@@ -21,7 +21,7 @@ client.on("interactionCreate", async (interaction) => {
         }
 
         if (command.devGuildOnly) {
-            if (interaction.guildId !== dev_guild_id || !developers.includes(interaction.user.id)) {
+            if (!dev_guild_ids.includes(interaction.guildId) || !developers.includes(interaction.user.id)) {
                 return interaction.reply({ content: t.cmdDevOnly(interaction.commandName), ephemeral: true });
             }
         }

@@ -1,6 +1,6 @@
 const { readdirSync } = require("fs");
 const { REST, Routes, Client, Collection, ActivityType } = require('discord.js');
-const { client_id, client_token, nodes, dev_guild_id } = require("./configuration/index");
+const { client_id, client_token, nodes, dev_guild_ids } = require("./configuration/index");
 const { logger } = require("./functions/logger");
 const { Riffy } = require("riffy")
 const { initDatabase } = require("./database/index")
@@ -133,11 +133,13 @@ async function load_slash_commands() {
         logger("Successfully registered global application commands.", "success")
 
         if (devSlash.length > 0) {
-            if (!dev_guild_id) {
+            if (dev_guild_ids.length === 0) {
                 logger("DEV_GUILD_ID is not set — skipping dev command registration.", "warn")
             } else {
-                await rest.put(Routes.applicationGuildCommands(client_id, dev_guild_id), { body: devSlash });
-                logger(`Successfully registered ${devSlash.length} dev command(s) on guild ${dev_guild_id}.`, "success")
+                for (const guildId of dev_guild_ids) {
+                    await rest.put(Routes.applicationGuildCommands(client_id, guildId), { body: devSlash });
+                    logger(`Successfully registered ${devSlash.length} dev command(s) on guild ${guildId}.`, "success")
+                }
             }
         }
     } catch (err) {
