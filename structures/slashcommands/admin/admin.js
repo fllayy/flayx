@@ -145,7 +145,7 @@ module.exports = {
                     const settings = await getGuildSettings(guild.id);
                     if (!settings.announce_channel) continue;
 
-                    const channel = guild.channels.cache.get(settings.announce_channel);
+                    const channel = await guild.channels.fetch(settings.announce_channel).catch(() => null);
                     if (!channel?.isTextBased()) continue;
 
                     await channel.send(message);
