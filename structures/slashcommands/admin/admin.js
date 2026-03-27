@@ -1,6 +1,50 @@
 const { EmbedBuilder } = require('discord.js');
 const { BLURPLE, DARK } = require('../../constants/colors');
-const { getGuildSettings } = require('../../database/index');
+const { getGuildSettings, getDatabaseStats } = require('../../database/index');
+
+const YT_CIPHER_URL = process.env.YT_CIPHER_URL || 'http://yt-cipher:8001';
+
+/** Ping yt-cipher and return { online, latencyMs, error }. */
+async function checkYtCipher() {
+    const start = Date.now();
+    try {
+        await fetch(YT_CIPHER_URL, { signal: AbortSignal.timeout(3000) });
+        return { online: true, latencyMs: Date.now() - start };
+    } catch (e) {
+        return { online: false, latencyMs: -1, error: e.message };
+    }
+}
+
+/**
+ * Fetch live stats from a NodeLink node via GET /v4/stats.
+ * Returns { ok, latencyMs, stats, error } where stats mirrors the Lavalink v4 stats shape.
+ */
+async function fetchNodeStats(node) {
+    const proto = node.secure ? 'https' : 'http';
+    const url   = `${proto}://${node.host}:${node.port}/v4/stats`;
+    const start = Date.now();
+    try {
+        const res = await fetch(url, {
+            headers: { Authorization: node.password },
+            signal: AbortSignal.timeout(3000),
+        });
+        const latencyMs = Date.now() - start;
+        if (!res.ok) return { ok: false, latencyMs, error: `HTTP ${res.status}` };
+        const stats = await res.json();
+        return { ok: true, latencyMs, stats };
+    } catch (e) {
+        return { ok: false, latencyMs: Date.now() - start, error: e.message };
+    }
+}
+
+/** Format a duration in seconds to "Xd Xh Xm Xs". */
+function fmtUptime(sec) {
+    const d = Math.floor(sec / 86400);
+    const h = Math.floor((sec % 86400) / 3600);
+    const m = Math.floor((sec % 3600) / 60);
+    const s = sec % 60;
+    return `${d}d ${h}h ${m}m ${s}s`;
+}
 
 module.exports = {
     name: 'admin',
@@ -105,34 +149,84 @@ module.exports = {
 
         // ── /admin stats ───────────────────────────────────────────────────
         if (sub === 'stats') {
-            const totalGuilds  = client.guilds.cache.size;
-            const totalUsers   = client.guilds.cache.reduce((acc, g) => acc + g.memberCount, 0);
-            const uptimeSec    = Math.floor(process.uptime());
-            const d = Math.floor(uptimeSec / 86400);
-            const h = Math.floor((uptimeSec % 86400) / 3600);
-            const m = Math.floor((uptimeSec % 3600) / 60);
-            const s = uptimeSec % 60;
-            const uptime = `${d}d ${h}h ${m}m ${s}s`;
+            // Run external checks in parallel
+            const [dbStats, cipherStats] = await Promise.all([
+                getDatabaseStats(),
+                checkYtCipher(),
+            ]);
 
-            const memMB = (process.memoryUsage().heapUsed / 1024 / 1024).toFixed(1);
-
-            const activeNodes = [...client.riffy.nodes.values()].filter(n => n.connected).length;
-            const totalNodes  = client.riffy.nodes.size;
+            // ── Bot overview ──
+            const totalGuilds   = client.guilds.cache.size;
+            const totalUsers    = client.guilds.cache.reduce((acc, g) => acc + g.memberCount, 0);
             const activePlayers = client.riffy.players.size;
+            const mem           = process.memoryUsage();
+            const rssMB         = (mem.rss / 1024 / 1024).toFixed(1);
+            const heapMB        = (mem.heapUsed / 1024 / 1024).toFixed(1);
 
-            const embed = new EmbedBuilder()
+            const botEmbed = new EmbedBuilder()
                 .setColor(BLURPLE)
                 .setTitle('Bot Statistics')
                 .addFields(
-                    { name: 'Servers',   value: `\`${totalGuilds}\``,                  inline: true },
-                    { name: 'Users',     value: `\`${totalUsers}\``,                   inline: true },
-                    { name: 'Players',   value: `\`${activePlayers}\``,                inline: true },
-                    { name: 'Uptime',    value: `\`${uptime}\``,                       inline: true },
-                    { name: 'Memory',    value: `\`${memMB} MB\``,                     inline: true },
-                    { name: 'Nodes',     value: `\`${activeNodes}/${totalNodes}\``,    inline: true },
+                    { name: 'Servers',  value: `\`${totalGuilds}\``,  inline: true },
+                    { name: 'Users',    value: `\`${totalUsers}\``,   inline: true },
+                    { name: 'Players',  value: `\`${activePlayers}\``, inline: true },
+                    { name: 'Uptime',   value: `\`${fmtUptime(Math.floor(process.uptime()))}\``, inline: true },
+                    { name: 'RSS',      value: `\`${rssMB} MB\``,     inline: true },
+                    { name: 'Heap',     value: `\`${heapMB} MB\``,    inline: true },
                 );
 
-            return interaction.editReply({ embeds: [embed] });
+            // ── NodeLink nodes — fetch live stats via REST ──
+            const nodes      = [...client.riffy.nodes.values()];
+            const nodeResults = await Promise.all(nodes.map(n => fetchNodeStats(n)));
+
+            const nodeFields = nodes.map((node, i) => {
+                const addr   = `${node.host}:${node.port}`;
+                const result = nodeResults[i];
+                const label  = `${result.ok ? '[UP]' : '[DOWN]'} ${node.name ?? addr}`;
+                if (!result.ok) {
+                    return { name: label, value: `\`${addr}\` — ${result.error} (\`${result.latencyMs}ms\`)`, inline: false };
+                }
+                const { stats } = result;
+                const memUsed  = (stats.memory.used      / 1024 / 1024).toFixed(1);
+                const memAlloc = (stats.memory.allocated / 1024 / 1024).toFixed(1);
+                const cpuSys   = (stats.cpu.systemLoad   * 100).toFixed(1);
+                const cpuNlRaw = stats.cpu.lavalinkLoad ?? stats.cpu.nodelinkLoad ?? stats.cpu.appLoad;
+                const cpuNl    = cpuNlRaw != null ? (cpuNlRaw * 100).toFixed(1) : null;
+                return {
+                    name: label,
+                    value: [
+                        `\`${addr}\` • Latency: \`${result.latencyMs}ms\``,
+                        `Players: \`${stats.playingPlayers}/${stats.players}\` • CPU: \`sys ${cpuSys}%${cpuNl != null ? ` / nl ${cpuNl}%` : ''}\``,
+                        `Memory: \`${memUsed}/${memAlloc} MB\` • Uptime: \`${fmtUptime(Math.floor(stats.uptime / 1000))}\``,
+                    ].join('\n'),
+                    inline: false,
+                };
+            });
+
+            const nodeEmbed = new EmbedBuilder()
+                .setColor(BLURPLE)
+                .setTitle(`NodeLink — ${nodeResults.filter(r => r.ok).length}/${nodes.length} nodes`)
+                .addFields(nodeFields.length ? nodeFields : [{ name: 'No nodes configured', value: '\u200b' }]);
+
+            // ── Infrastructure ──
+            const dbValue = [
+                `Pool: \`${dbStats.total} total, ${dbStats.idle} idle, ${dbStats.waiting} waiting\``,
+                `Latency: \`${dbStats.latencyMs >= 0 ? `${dbStats.latencyMs}ms` : 'error'}\``,
+            ].join('\n');
+
+            const cipherValue = cipherStats.online
+                ? `Status: \`Online\` • Latency: \`${cipherStats.latencyMs}ms\``
+                : `Status: \`Offline\` — ${cipherStats.error ?? 'timeout'}`;
+
+            const infraEmbed = new EmbedBuilder()
+                .setColor(BLURPLE)
+                .setTitle('Infrastructure')
+                .addFields(
+                    { name: 'PostgreSQL', value: dbValue,     inline: false },
+                    { name: 'yt-cipher',  value: cipherValue, inline: false },
+                );
+
+            return interaction.editReply({ embeds: [botEmbed, nodeEmbed, infraEmbed] });
         }
 
         // ── /admin announce ────────────────────────────────────────────────

@@ -137,6 +137,30 @@ async function setGuildAnnounceChannel(guildId, channelId) {
     `, [guildId, channelId]);
 }
 
+/**
+ * Returns pg pool connection counts and a round-trip latency measurement.
+ * @returns {Promise<{ total: number, idle: number, waiting: number, latencyMs: number }>}
+ */
+async function getDatabaseStats() {
+    const start = Date.now();
+    try {
+        await pool.query('SELECT 1');
+        return {
+            total: pool.totalCount,
+            idle: pool.idleCount,
+            waiting: pool.waitingCount,
+            latencyMs: Date.now() - start,
+        };
+    } catch {
+        return {
+            total: pool.totalCount,
+            idle: pool.idleCount,
+            waiting: pool.waitingCount,
+            latencyMs: -1,
+        };
+    }
+}
+
 module.exports = {
     initDatabase,
     getGuildSettings,
@@ -145,4 +169,5 @@ module.exports = {
     setGuildLanguage,
     setGuildAnnounceChannel,
     recordVoiceTime,
+    getDatabaseStats,
 };
