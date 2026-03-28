@@ -97,6 +97,34 @@ function buildEmbed(player, track, t = en) {
         .setColor(color);
 }
 
+/**
+ * Preload the next queued track into NodeLink for gapless playback.
+ * Resolves lazy tracks (e.g. Spotify) early and updates the queue entry
+ * so both NodeLink and Riffy use the same resolved track.
+ * Fails silently — this is a best-effort optimisation.
+ * @param {object} player - Riffy player instance
+ */
+async function preloadNextTrack(player) {
+    let next = player.queue[0];
+    if (!next) return;
+
+    if (!next.track) {
+        try {
+            next = await next.resolve(client.riffy);
+            player.queue[0] = next;
+        } catch {
+            return;
+        }
+    }
+
+    if (!next.track) return;
+
+    await player.node.rest.updatePlayer({
+        guildId: player.guildId,
+        data: { nextTrack: { encoded: next.track } },
+    });
+}
+
 client.riffy.on('trackStart', async (player, track) => {
     const channel = client.channels.cache.get(player.textChannel);
     if (!channel) return;
@@ -136,6 +164,9 @@ client.riffy.on('trackStart', async (player, track) => {
             player.seekTo(player._seekOnStart);
             player._seekOnStart = null;
         }
+
+        // Preload next track for gapless playback (fire-and-forget)
+        preloadNextTrack(player).catch(() => {});
     } catch (err) {
         console.error('[trackStart] Error:', err);
         player.message = await channel.send({ content: t.trackFallback(track.info.title, track.info.author) }).catch(() => null);

@@ -202,3 +202,10 @@ client.once('clientReady', async () => {
         status: 'online'
     });
 })
+
+client.on('shardResume', () => {
+    client.user?.setPresence({
+        activities: [{ name: '/play', type: ActivityType.Playing }],
+        status: 'online'
+    });
+})
