@@ -3,6 +3,7 @@ const client = require("../../client");
 const { getLocale } = require("../../functions/i18n");
 const { BLURPLE, SOURCE_COLORS } = require("../../constants/colors");
 const en = require("../../../locales/en");
+const { autoPlay } = require('riffy/build/functions/autoPlay');
 
 // Lazy-loaded musicard module — imported once and reused across tracks
 let musicardModule = null;
@@ -85,7 +86,7 @@ function buildEmbed(player, track, t = en) {
     const loopMode = player.loop ?? 'none';
     const loopIcon = t.trackLoopIcons[loopMode];
     const loopText = loopIcon ? ` | Loop: ${loopIcon}` : '';
-    const requester = player._autoplayTriggered
+    const requester = (player._autoplayTriggered || track.isAutoplay)
         ? t.trackRequesterAuto
         : (track.info.requester?.displayName ?? track.info.requester?.username ?? t.trackRequesterAuto);
 
@@ -95,6 +96,61 @@ function buildEmbed(player, track, t = en) {
         .setImage('attachment://musicard.png')
         .setFooter({ text: t.trackFooter(queueLength, duration, volume, autoplay, loopText) })
         .setColor(color);
+}
+
+/**
+ * Pre-fetch the next autoplay track while the current one is playing and store
+ * it in player._pendingAutoplay (NOT added to the queue yet).
+ * This way a user /play command always takes priority — _pendingAutoplay is only
+ * consumed by queueEnd.js when the queue is still empty at track end.
+ * Mirrors Riffy's autoplay logic but uses player.current instead of player.previous.
+ * Called 8 seconds after track start to avoid competing with musicard + Discord I/O.
+ * @param {object} player - Riffy player instance
+ */
+async function preloadAutoplay(player) {
+    if (!player.isAutoplay || !player.playing) return;
+    if (player.queue.length > 0) return; // queue already has something, no need
+
+    const current = player.current;
+    if (!current) return;
+
+    const platform = current.info.sourceName;
+    let query, source;
+
+    if (platform === 'youtube') {
+        query = `https://www.youtube.com/watch?v=${current.info.identifier}&list=RD${current.info.identifier}`;
+        source = 'ytmsearch';
+    } else if (['soundcloud', 'spotify', 'applemusic'].includes(platform)) {
+        const helperSource = platform === 'applemusic' ? 'apple-music' : (platform === 'soundcloud' ? 'sound-cloud' : platform);
+        query = await autoPlay(current.info.uri, helperSource);
+        source = platform === 'soundcloud' ? 'scsearch' : (platform === 'spotify' ? 'spsearch' : 'amsearch');
+        if (!query) return;
+    } else {
+        return; // unsupported platform
+    }
+
+    const response = await client.riffy.resolve({ query, source, requester: current.info.requester });
+    if (!response?.tracks?.length) return;
+
+    const isV4 = player.node.rest.version === 'v4';
+    if (isV4  && ['error', 'empty'].includes(response.loadType)) return;
+    if (!isV4 && ['LOAD_FAILED', 'NO_MATCHES'].includes(response.loadType)) return;
+
+    // Deduplicate using Riffy's already-played identifiers
+    const played = player.playedIdentifiers ?? new Set();
+    let candidates = response.tracks.filter(t => !played.has(t.info.identifier || t.info.uri));
+    if (candidates.length === 0) candidates = response.tracks;
+    if (candidates.length === 0) return;
+
+    const track = candidates[Math.floor(Math.random() * candidates.length)];
+    track.info.requester = current.info.requester;
+    Object.defineProperty(track, 'isAutoplay', { writable: false, enumerable: true, value: true });
+
+    // Guard: user may have queued something while we were fetching
+    if (player.queue.length > 0 || !player.playing) return;
+
+    player._pendingAutoplay = track;
+    await preloadNextTrack(player); // sends nextTrack to NodeLink for buffering
 }
 
 /**
@@ -138,6 +194,7 @@ client.riffy.on('trackStart', async (player, track) => {
         const row = buildRow();
         player.trackData = track;
         player._autoplayTriggered = false;
+        player._pendingAutoplay = null; // clear stale preload from previous track
 
         if (albumArt) {
             const { Bloom } = await getMusicardModule();
@@ -165,12 +222,14 @@ client.riffy.on('trackStart', async (player, track) => {
             player._seekOnStart = null;
         }
 
-        // Preload next track for gapless playback (fire-and-forget)
+        // Preload next queued track for gapless playback (fire-and-forget)
         preloadNextTrack(player).catch(() => {});
+        // Autoplay: pre-fetch next recommendation after 8s to avoid competing with track start I/O
+        if (player.isAutoplay && !isLive) setTimeout(() => preloadAutoplay(player).catch(() => {}), 8000);
     } catch (err) {
         console.error('[trackStart] Error:', err);
         player.message = await channel.send({ content: t.trackFallback(track.info.title, track.info.author) }).catch(() => null);
     }
 });
 
-module.exports = { buildEmbed, buildRow, buildDisabledRow, formatDuration };
+module.exports = { buildEmbed, buildRow, buildDisabledRow, formatDuration, preloadNextTrack };

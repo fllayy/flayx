@@ -9,7 +9,14 @@ client.riffy.on("queueEnd", async (player) => {
 
     if (player.isAutoplay) {
         player._autoplayTriggered = true;
-        player.autoplay(player);
+        if (player._pendingAutoplay) {
+            // Use the track pre-fetched during playback — no extra resolve needed
+            player.queue.add(player._pendingAutoplay);
+            player._pendingAutoplay = null;
+            player.play();
+        } else {
+            player.autoplay(player);
+        }
     } else {
         player.destroy();
         if (channel) channel.send(t.queueEndMsg).catch(() => {});

@@ -1,6 +1,7 @@
 const { ApplicationCommandOptionType } = require('discord.js');
 const { getGuildSettings } = require('../../database/index');
 const { getLocaleFromSettings } = require('../../functions/i18n');
+const { preloadNextTrack } = require('../../riffy/tracks/trackStart');
 
 /**
  * Parse a YouTube timestamp query parameter (?t= or ?start=) into milliseconds.
@@ -84,19 +85,23 @@ module.exports = {
         const { loadType, tracks, playlistInfo } = resolve;
 
         if (loadType === 'playlist') {
+            const wasEmpty = player.queue.length === 0;
             for (const track of resolve.tracks) {
                 track.info.requester = interaction.member;
                 player.queue.add(track);
             }
             await interaction.reply(t.playPlaylist(tracks.length, playlistInfo.name));
             if (!player.playing && !player.paused) return player.play();
+            if (wasEmpty) preloadNextTrack(player).catch(() => {});
 
         } else if (loadType === 'search' || loadType === 'track') {
             const track = tracks.shift();
             track.info.requester = interaction.member;
+            const wasEmpty = player.queue.length === 0;
             player.queue.add(track);
             await interaction.reply(t.playTrack(track.info.title));
             if (!player.playing && !player.paused) return player.play();
+            if (wasEmpty) preloadNextTrack(player).catch(() => {});
 
         } else {
             return interaction.reply(t.playNoResults);
