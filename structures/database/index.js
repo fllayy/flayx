@@ -25,6 +25,10 @@ const MIGRATIONS = [
             ALTER TABLE guild_settings ADD COLUMN IF NOT EXISTS auto_leave_delay INTEGER DEFAULT 0;
         `,
     },
+    {
+        version: 3,
+        sql: `ALTER TABLE guild_settings DROP COLUMN IF EXISTS auto_leave_delay;`,
+    },
 ];
 
 /** Run all pending versioned migrations against the database. */

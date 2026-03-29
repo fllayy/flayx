@@ -136,6 +136,9 @@ module.exports = {
         lowpass:    'Low Pass',
     },
 
+    // track error
+    trackErrorMsg: (title) => `❌ Impossible de jouer **${title}**, passage à la piste suivante.`,
+
     // ping
     pingTitle: `🏓 Pong !`,
     pingWs:    `WebSocket`,
